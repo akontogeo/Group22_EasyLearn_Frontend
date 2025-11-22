@@ -17,7 +17,7 @@ export default function Header(){
   return (
     <header className="header">
       <div style={{display:'flex',alignItems:'center',gap:12}}>
-        <div style={{width:48,height:48,borderRadius:24,background:'white',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold'}}>EL</div>
+        <img src="/Logo.png" alt="EasyLearn Logo" style={{width:48,height:48,objectFit:'contain'}} />
         <Link to="/" style={{textDecoration:'none',color:'inherit',fontSize:18,fontWeight:600}}>EasyLearn</Link>
       </div>
       <form onSubmit={handleSearch} style={{flex:1,maxWidth:500,margin:'0 16px'}}>

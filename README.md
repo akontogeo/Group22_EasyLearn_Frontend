@@ -1,6 +1,6 @@
 # EasyLearn Frontend
 
-Production-ready React frontend for the EasyLearn educational platform. Built with Create React App and connects to the backend API running on port 5000.
+Production-ready React frontend for the Easy-Learn educational platform. Built with Create React App and connects to the backend API running on port 5000.
 
 ## Features
 

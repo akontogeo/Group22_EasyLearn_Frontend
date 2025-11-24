@@ -11,7 +11,7 @@ body{
   color:var(--text);
   background:var(--muted);
 }
-.container{max-width:1100px;margin:0 auto;padding:24px}
+.container{max-width:1600px;margin:0 auto;padding:24px}
 .grid{display:grid;grid-template-columns:1fr 320px;gap:24px}
 .card{background:white;border-radius:8px;padding:16px;box-shadow:0 4px 8px rgba(0,0,0,0.06)}
 .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:6px;border:none;cursor:pointer}

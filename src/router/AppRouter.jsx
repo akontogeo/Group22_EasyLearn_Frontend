@@ -5,12 +5,13 @@ import CourseDetails from '../pages/CourseDetails';
 import MyCourses from '../pages/MyCourses';
 import Profile from '../pages/Profile';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function AppRouter(){
   return (
-    <div>
+    <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%'}}>
       <Header />
-      <div className="container">
+      <div className="container" style={{flex: '1 1 auto', width: '100%', maxWidth: '1600px'}}>
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/courses/:id" element={<CourseDetails/>} />
@@ -18,6 +19,7 @@ export default function AppRouter(){
           <Route path="/profile" element={<Profile/>} />
         </Routes>
       </div>
+      <Footer />
     </div>
   );
 }

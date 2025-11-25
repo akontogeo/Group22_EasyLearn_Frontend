@@ -28,6 +28,13 @@ export default function FiltersPanel({ onApply }){
     onApply(params);
   };
 
+  const handleClear = () => {
+    const empty = { category: '', difficulty: '', premium: '' };
+    setFilters(empty);
+    // Notify parent to load without filters
+    onApply({});
+  };
+
   return (
     <div style={{
       background: 'white',
@@ -170,26 +177,47 @@ export default function FiltersPanel({ onApply }){
         </label>
       </div>
 
-      {/* Apply Button */}
-      <button
-        onClick={handleApply}
-        style={{
-          width: '100%',
-          background: '#2ea67a',
-          color: 'white',
-          border: 'none',
-          padding: '12px',
-          borderRadius: '6px',
-          fontSize: '15px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          transition: 'background 0.2s'
-        }}
-        onMouseOver={(e) => e.target.style.background = '#268c65'}
-        onMouseOut={(e) => e.target.style.background = '#2ea67a'}
-      >
-        Apply
-      </button>
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={handleApply}
+          style={{
+            flex: 1,
+            background: '#2ea67a',
+            color: 'white',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '6px',
+            fontSize: '15px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#268c65'}
+          onMouseOut={(e) => e.target.style.background = '#2ea67a'}
+        >
+          Apply
+        </button>
+
+        <button
+          onClick={handleClear}
+          style={{
+            flex: 1,
+            background: '#e6e6e6',
+            color: '#333',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '6px',
+            fontSize: '15px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#d4d4d4'}
+          onMouseOut={(e) => e.target.style.background = '#e6e6e6'}
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 }

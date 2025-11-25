@@ -1,132 +1,167 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCourse, getCourseRatings, submitCourseRating } from '../api/courses';
-import { enrollInCourse, getProgress, withdrawFromCourse } from '../api/users';
-import { useAuth } from '../context/AuthContext';
+import { getCourse, getCourseRatings } from '../api/courses';
 
 export default function CourseDetails(){
   const { id } = useParams();
   const [course, setCourse] = useState(null);
-  const [ratings, setRatings] = useState([]);
-  const [progress, setProgress] = useState(null);
-  const [newRating, setNewRating] = useState(5);
-  const { user, refreshUser } = useAuth();
+  const [avgRating, setAvgRating] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(()=>{
     async function load(){
       try{
+        setLoading(true);
         const c = await getCourse(id);
         setCourse(c);
+        
+        // Fetch ratings and calculate average
         const r = await getCourseRatings(id);
-        setRatings(r || []);
-        if(user){
-          const p = await getProgress(user.userId, id);
-          setProgress(p);
+        if(r && r.length > 0){
+          const avg = (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1);
+          setAvgRating(avg);
+        } else {
+          setAvgRating('N/A');
         }
-      }catch(e){console.error(e)}
+      }catch(e){
+        console.error('Failed to load course:', e);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
-  },[id, user]);
+  },[id]);
 
-  const handleEnroll = async () => {
-    if(!user) return alert('Please sign in');
-    try{
-      await enrollInCourse(user.userId, Number(id));
-      alert('Enrolled successfully!');
-      // Reload course and refresh user to update enrolled courses
-      const c = await getCourse(id);
-      setCourse(c);
-      if (refreshUser) refreshUser();
-    }catch(e){
-      console.error('Enroll error:', e);
-      const errorMsg = e.response?.data?.message || e.response?.data?.error || e.message;
-      alert(`Enroll failed: ${errorMsg}`);
-    }
+  if(loading){
+    return <div className="card">Loading course...</div>;
   }
 
-  const handleWithdraw = async () => {
-    if(!user) return;
-    try{
-      await withdrawFromCourse(user.userId, Number(id));
-      alert('Withdrawn successfully');
-      if (refreshUser) refreshUser();
-    }catch(e){alert('Withdraw failed')}
+  if(!course){
+    return <div className="card">Course not found</div>;
   }
-
-  const handleRatingSubmit = async () => {
-    if(!user) return alert('Please sign in');
-    try{
-      await submitCourseRating(Number(id), { userId: user.userId, stars: newRating });
-      alert('Rating submitted!');
-      const r = await getCourseRatings(id);
-      setRatings(r || []);
-    }catch(e){
-      alert('Failed to submit rating');
-    }
-  }
-
-  const avgRating = ratings.length > 0 
-    ? (ratings.reduce((sum, r) => sum + r.stars, 0) / ratings.length).toFixed(1)
-    : 'N/A';
 
   return (
-    <div>
-      {!course && <div className="card">Loading course...</div>}
-      {course && (
-        <>
-          <div className="card" style={{marginBottom:16}}>
-            <div style={{display:'flex',alignItems:'start',gap:16}}>
-              <div style={{width:120,height:120,background:'#eee',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,fontWeight:'bold'}}>
-                {course.title?.slice(0,2)}
-              </div>
-              <div style={{flex:1}}>
-                <h1 style={{margin:'0 0 8px 0'}}>{course.title}</h1>
-                <p style={{color:'#666',margin:'0 0 12px 0'}}>{course.description}</p>
-                <div style={{display:'flex',gap:12,alignItems:'center',fontSize:14}}>
-                  <span><strong>Category:</strong> {course.category}</span>
-                  <span><strong>Difficulty:</strong> {course.difficulty}</span>
-                  <span><strong>Rating:</strong> ⭐ {avgRating}</span>
-                  {course.premium && <span style={{background:'var(--accent)',color:'white',padding:'2px 8px',borderRadius:4}}>Premium</span>}
-                </div>
-              </div>
-            </div>
-            <div style={{display:'flex',gap:12,marginTop:16}}>
-              <button className="btn" onClick={handleEnroll}>Enroll</button>
-              <button onClick={handleWithdraw} style={{padding:'8px 12px',borderRadius:6,border:'1px solid #ccc',background:'white',cursor:'pointer'}}>Withdraw</button>
-            </div>
-            {progress && (
-              <div style={{marginTop:12,padding:12,background:'#f9f9f9',borderRadius:6}}>
-                <strong>Your Progress:</strong> {progress.progressPercentage}%
+    <div style={{maxWidth: '1100px', margin: '0 auto', width: '100%'}}>
+      {/* Main Course Card - matches mockup layout */}
+      <div className="card" style={{marginBottom: 24, position: 'relative'}}>
+        {/* Title with Image on the right */}
+        <div style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, marginTop: 32}}>
+          <h1 style={{
+            margin: 0, 
+            fontSize: 32, 
+            fontWeight: 600,
+            color: '#222',
+            flex: 1,
+            paddingRight: 20,
+            paddingTop: 24
+          }}>
+            {course.title}
+          </h1>
+          
+          {/* Course Image - positioned on the right like mockup */}
+          <div style={{
+            width: 140, 
+            height: 140, 
+            background: '#f0f0f0', 
+            borderRadius: 12, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            flexShrink: 0,
+            overflow: 'hidden',
+            border: '2px solid #e0e0e0'
+          }}>
+            {course.courseImage ? (
+              <img src={course.courseImage} alt={course.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+            ) : (
+              <div style={{fontSize: 56, fontWeight: 'bold', color: '#999'}}>
+                {course.title?.slice(0,2).toUpperCase()}
               </div>
             )}
           </div>
+        </div>
 
-          <div className="card">
-            <h3>Ratings ({ratings.length})</h3>
-            {ratings.length===0 && <p>No ratings yet. Be the first!</p>}
-            <div style={{display:'grid',gap:8,marginBottom:16}}>
-              {ratings.slice(0,10).map(r=>(
-                <div key={r.ratingId} style={{padding:8,background:'#f9f9f9',borderRadius:4}}>
-                  {'⭐'.repeat(r.stars)} ({r.stars}/5)
-                </div>
-              ))}
-            </div>
-            <div style={{borderTop:'1px solid #eee',paddingTop:16}}>
-              <h4>Submit your rating</h4>
-              <div style={{display:'flex',gap:12,alignItems:'center'}}>
-                <select value={newRating} onChange={(e)=>setNewRating(Number(e.target.value))} style={{padding:8}}>
-                  <option value={1}>1 star</option>
-                  <option value={2}>2 stars</option>
-                  <option value={3}>3 stars</option>
-                  <option value={4}>4 stars</option>
-                  <option value={5}>5 stars</option>
-                </select>
-                <button className="btn" onClick={handleRatingSubmit}>Submit Rating</button>
-              </div>
-            </div>
+        {/* Description Section */}
+        <div style={{marginBottom: 20}}>
+          <h3 style={{margin: '0 0 12px 0', fontSize: 16, fontWeight: 600}}>Description</h3>
+          <p style={{
+            margin: 0, 
+            lineHeight: 1.7, 
+            color: '#333',
+            fontSize: 14
+          }}>
+            {course.description}
+          </p>
+        </div>
+
+        {/* Metadata Grid - Category, Difficulty, Free/Premium, Rating */}
+        <div style={{
+          display: 'flex', 
+          alignItems: 'center',
+          gap: 40,
+          marginBottom: 20,
+          paddingTop: 16,
+          borderTop: '1px solid #e5e5e5'
+        }}>
+          <div>
+            <div style={{fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 500}}>Category</div>
+            <div style={{fontSize: 15, color: '#222', fontWeight: 500}}>{course.category}</div>
           </div>
-        </>
-      )}
+          
+          <div>
+            <div style={{fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 500}}>Difficulty</div>
+            <div style={{fontSize: 15, color: '#222', fontWeight: 500}}>{course.difficulty}</div>
+          </div>
+
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            {course.premium ? (
+              <span style={{
+                background: '#764ba2',
+                color: 'white',
+                padding: '4px 14px',
+                borderRadius: 4,
+                fontSize: 13,
+                fontWeight: 500
+              }}>
+                Premium course
+              </span>
+            ) : (
+              <span style={{
+                color: '#222',
+                fontSize: 14,
+                fontWeight: 500
+              }}>
+                Free course
+              </span>
+            )}
+          </div>
+          
+          <div style={{display: 'flex', alignItems: 'center', gap: 8}}>
+            <span style={{fontSize: 28, lineHeight: 1}}>⭐</span>
+            <span style={{fontSize: 24, fontWeight: 600, color: '#222'}}>{avgRating}</span>
+          </div>
+        </div>
+
+        {/* Enroll Button Row */}
+        <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
+          
+          <button 
+            style={{
+              background: 'var(--accent)',
+              color: 'white',
+              padding: '12px 48px',
+              fontSize: 16,
+              fontWeight: 600,
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(46, 166, 122, 0.3)'
+            }}
+          >
+            Enroll
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

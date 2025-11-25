@@ -15,8 +15,9 @@ export default function AppRouter(){
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/courses/:id" element={<CourseDetails/>} />
-          <Route path="/my-courses" element={<MyCourses/>} />
-          <Route path="/profile" element={<Profile/>} />
+          <Route path="/users/:userId/courses" element={<MyCourses/>} />
+          <Route path="/users/:userId/courses/:courseId" element={<CourseDetails/>} />
+          <Route path="/users/:userId" element={<Profile/>} />
         </Routes>
       </div>
       <Footer />

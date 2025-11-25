@@ -8,4 +8,4 @@ export const CATEGORIES = [
 
 export const DIFFICULTY_LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 
-export const DEFAULT_USER_ID = 101;
+export const DEFAULT_USER_ID = 1;

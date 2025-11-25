@@ -29,8 +29,8 @@ export default function Header(){
         />
       </form>
       <div style={{display:'flex',alignItems:'center',gap:16}}>
-        <Link to="/my-courses" style={{textDecoration:'none',color:'inherit'}}>My Courses</Link>
-        <Link to="/profile" style={{textDecoration:'none',color:'inherit'}}>
+        <Link to={user ? `/users/${user.userId}/courses` : '/users/1/courses'} style={{textDecoration:'none',color:'inherit'}}>My Courses</Link>
+        <Link to={user ? `/users/${user.userId}` : '/users/1'} style={{textDecoration:'none',color:'inherit'}}>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <div style={{width:36,height:36,borderRadius:18,background:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>👤</div>
             <span>{user?`Hi, ${user.username}`:'User'}</span>

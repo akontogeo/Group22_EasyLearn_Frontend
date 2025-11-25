@@ -1,42 +1,146 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header(){
   const { user } = useAuth();
-  const [keyword, setKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/' || location.pathname === '/courses';
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if(keyword.trim()){
-      navigate(`/?keyword=${encodeURIComponent(keyword)}`);
+    if(searchKeyword.trim()){
+      navigate(`/courses?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      // Trigger page reload or state update if needed
+      window.location.href = `/courses?keyword=${encodeURIComponent(searchKeyword.trim())}`;
     }
   };
 
   return (
-    <header className="header">
-      <div style={{display:'flex',alignItems:'center',gap:12}}>
-        <img src="/Logo.png" alt="EasyLearn Logo" style={{width:48,height:48,objectFit:'contain'}} />
-        <Link to="/" style={{textDecoration:'none',color:'inherit',fontSize:18,fontWeight:600}}>EasyLearn</Link>
-      </div>
-      <form onSubmit={handleSearch} style={{flex:1,maxWidth:500,margin:'0 16px'}}>
-        <input 
-          className="search" 
-          placeholder="What do you want to learn today ?" 
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-        />
+    <header style={{
+      background: '#b8e6d5',
+      padding: '16px 32px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '24px',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
+    }}>
+      {/* Logo */}
+      <Link to="/" style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        color: '#2ea67a',
+        fontWeight: 700,
+        fontSize: '18px',
+        whiteSpace: 'nowrap'
+      }}>
+        <img src="/Logo.png" alt="EasyLearn" style={{width: 40, height: 40, objectFit: 'contain'}} />
+        EasyLearn
+      </Link>
+
+      {/* Search Bar */}
+      <form onSubmit={handleSearch} style={{
+        flex: 1,
+        maxWidth: '600px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        <div style={{
+          flex: 1,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <input
+            type="text"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            placeholder="What do you want to learn today?"
+            style={{
+              width: '100%',
+              padding: '10px 40px 10px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              outline: 'none',
+              background: 'white'
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              position: 'absolute',
+              right: '8px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
+        </div>
       </form>
-      <div style={{display:'flex',alignItems:'center',gap:16}}>
-        <Link to={user ? `/users/${user.userId}/courses` : '/users/1/courses'} style={{textDecoration:'none',color:'inherit'}}>My Courses</Link>
-        <Link to={user ? `/users/${user.userId}` : '/users/1'} style={{textDecoration:'none',color:'inherit'}}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <div style={{width:36,height:36,borderRadius:18,background:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>👤</div>
-            <span>{user?`Hi, ${user.username}`:'User'}</span>
+
+      {/* Right Navigation */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '20px',
+        marginLeft: 'auto'
+      }}>
+        <Link 
+          to={user ? `/users/${user.userId}/courses` : '/users/1/courses'} 
+          style={{
+            textDecoration: 'none',
+            color: '#333',
+            fontSize: '14px',
+            fontWeight: 500
+          }}
+        >
+          My Courses
+        </Link>
+        <Link 
+          to={user ? `/users/${user.userId}` : '/users/1'} 
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            textDecoration: 'none',
+            color: '#333'
+          }}
+        >
+          <div style={{
+            width: 36,
+            height: 36,
+            borderRadius: '50%',
+            background: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px'
+          }}>
+            👤
           </div>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap'
+          }}>
+            Hi, {user?.username || 'User'}!
+          </span>
         </Link>
       </div>
     </header>
-  )
+  );
 }

@@ -14,6 +14,7 @@ export default function AppRouter(){
       <div className="container" style={{flex: '1 1 auto', width: '100%', maxWidth: '1600px'}}>
         <Routes>
           <Route path="/" element={<Home/>} />
+          <Route path="/courses" element={<Home/>} />
           <Route path="/courses/:id" element={<CourseDetails/>} />
           <Route path="/users/:userId/courses" element={<MyCourses/>} />
           <Route path="/users/:userId/courses/:courseId" element={<CourseDetails/>} />

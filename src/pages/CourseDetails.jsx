@@ -1,27 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getCourse, getCourseRatings } from '../api/courses';
+import { getUserEnrolledCourses, enrollInCourse } from '../api/users';
+import { useAuth } from '../context/AuthContext';
 
 export default function CourseDetails(){
-  const { id } = useParams();
+  const { id, courseId, userId } = useParams();
+  // Use courseId if available (from /users/:userId/courses/:courseId), otherwise use id (from /courses/:id)
+  const actualCourseId = courseId || id;
+  const { user } = useAuth();
   const [course, setCourse] = useState(null);
   const [avgRating, setAvgRating] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(()=>{
     async function load(){
       try{
         setLoading(true);
-        const c = await getCourse(id);
+        const c = await getCourse(actualCourseId);
         setCourse(c);
         
         // Fetch ratings and calculate average
-        const r = await getCourseRatings(id);
+        const r = await getCourseRatings(actualCourseId);
         if(r && r.length > 0){
           const avg = (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1);
           setAvgRating(avg);
         } else {
           setAvgRating('N/A');
+        }
+
+        // Check if user is enrolled (if we have userId from URL or context)
+        const currentUserId = userId || user?.userId;
+        if(currentUserId){
+          const enrolledCourses = await getUserEnrolledCourses(currentUserId);
+          const enrolled = enrolledCourses.some(ec => ec.courseId === Number(actualCourseId));
+          setIsEnrolled(enrolled);
         }
       }catch(e){
         console.error('Failed to load course:', e);
@@ -30,7 +45,26 @@ export default function CourseDetails(){
       }
     }
     load();
-  },[id]);
+  },[actualCourseId, userId, user]);
+
+  const handleEnroll = async () => {
+    const currentUserId = userId || user?.userId;
+    if(!currentUserId){
+      alert('Please log in to enroll');
+      return;
+    }
+    
+    try{
+      setEnrolling(true);
+      await enrollInCourse(currentUserId, actualCourseId);
+      alert('Successfully enrolled!');
+      setIsEnrolled(true);
+    }catch(e){
+      alert('Failed to enroll: ' + (e.response?.data?.message || e.message));
+    }finally{
+      setEnrolling(false);
+    }
+  };
 
   if(loading){
     return <div className="card">Loading course...</div>;
@@ -143,24 +177,40 @@ export default function CourseDetails(){
         </div>
 
         {/* Enroll Button Row */}
-        <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
-          
-          <button 
-            style={{
-              background: 'var(--accent)',
-              color: 'white',
-              padding: '12px 48px',
+        {!isEnrolled && (
+          <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
+            <button 
+              onClick={handleEnroll}
+              disabled={enrolling}
+              style={{
+                background: enrolling ? '#ccc' : 'var(--accent)',
+                color: 'white',
+                padding: '12px 48px',
+                fontSize: 16,
+                fontWeight: 600,
+                border: 'none',
+                borderRadius: 6,
+                cursor: enrolling ? 'not-allowed' : 'pointer',
+                boxShadow: '0 2px 8px rgba(46, 166, 122, 0.3)'
+              }}
+            >
+              {enrolling ? 'Enrolling...' : 'Enroll'}
+            </button>
+          </div>
+        )}
+        
+        {isEnrolled && (
+          <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
+            <span style={{
+              color: 'var(--accent)',
               fontSize: 16,
               fontWeight: 600,
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(46, 166, 122, 0.3)'
-            }}
-          >
-            Enroll
-          </button>
-        </div>
+              padding: '12px 24px'
+            }}>
+              ✓ Already Enrolled
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

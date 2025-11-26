@@ -5,8 +5,8 @@
   min-height: calc(100vh - 80px);
 }
 
-/* central container */
-.container {
+/* central container - scoped to MyCourses page */
+.mycourses-page .container {
   width: 1100px;
   max-width: calc(100% - 40px);
   margin: 24px auto;
@@ -166,7 +166,7 @@
   gap: 16px;
 }
 
-.card {
+.mycourses-page .card {
   background: #fff;
   padding: 16px;
   border-radius: 8px;
@@ -257,7 +257,9 @@
 }
 
 /* small helpers */
-.loading, .error, .empty {
+.mycourses-page .loading, 
+.mycourses-page .error, 
+.mycourses-page .empty {
   background: #fff;
   padding: 12px;
   border-radius: 6px;

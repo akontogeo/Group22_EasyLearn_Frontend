@@ -61,10 +61,16 @@ export default function MyCourses(){
           )}
           <div style={{display:'grid',gap:12}}>
             {courses.map(c => (
-              <CourseCard 
-                key={c.courseId} 
-                course={c} 
-                actions={
+              <div key={c.courseId} className="card" style={{display:'flex',alignItems:'center',gap:12}}>
+                <div style={{width:80,height:80,background:'#eee',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <strong>{c?.title?.slice(0,2) || 'C'}</strong>
+                </div>
+                <div style={{flex:1}}>
+                  <h3 style={{margin:'0 0 6px 0'}}>{c.title}</h3>
+                  <p style={{margin:0,color:'#666'}}>{c.description?.slice(0,120)}</p>
+                </div>
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  <Link to={`/users/${userId}/courses/${c.courseId}`} className="btn">View Progress</Link>
                   <button 
                     onClick={() => handleWithdraw(c.courseId, c.title)}
                     style={{
@@ -80,8 +86,8 @@ export default function MyCourses(){
                   >
                     Withdraw
                   </button>
-                } 
-              />
+                </div>
+              </div>
             ))}
           </div>
         </>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getCourse, getCourseRatings } from '../api/courses';
+import { getCourse, getCourseReviews } from '../api/courses';
 import { getUserEnrolledCourses, enrollInCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,8 +22,8 @@ export default function CourseDetails(){
         const c = await getCourse(actualCourseId);
         setCourse(c);
         
-        // Fetch ratings and calculate average
-        const r = await getCourseRatings(actualCourseId);
+        // Fetch reviews and calculate average
+        const r = await getCourseReviews(actualCourseId);
         if(r && r.length > 0){
           const avg = (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1);
           setAvgRating(avg);

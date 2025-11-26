@@ -21,9 +21,9 @@ export const getCourse = (courseId) => {
   return client.get(`/courses/${courseId}`).then(r => unwrap(r));
 };
 
-// GET /courses/{courseId}/ratings
-export const getCourseRatings = (courseId) => {
-  return client.get(`/courses/${courseId}/ratings`)
+// GET /courses/{courseId}/reviews
+export const getCourseReviews = (courseId) => {
+  return client.get(`/courses/${courseId}/reviews`)
     .then(r => {
       const data = unwrap(r);
       return Array.isArray(data) ? data : [];
@@ -31,7 +31,7 @@ export const getCourseRatings = (courseId) => {
     .catch(() => []);
 };
 
-// POST /courses/{courseId}/ratings
-export const submitCourseRating = (courseId, payload) => {
-  return client.post(`/courses/${courseId}/ratings`, payload).then(r => unwrap(r));
+// POST /courses/{courseId}/reviews
+export const submitCourseReview = (courseId, payload) => {
+  return client.post(`/courses/${courseId}/reviews`, payload).then(r => unwrap(r));
 };

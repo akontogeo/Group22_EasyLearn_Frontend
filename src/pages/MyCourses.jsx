@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getUserEnrolledCourses, getUserProfile, withdrawFromCourse } from '../api/users';
 import CourseCard from '../components/CourseCard';
-import { useAuth } from '../context/AuthContext';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './MyCourses.css';
-
 
 export default function MyCourses() {
   const userId = 1; // hardcoded for now
@@ -182,10 +180,15 @@ export default function MyCourses() {
             </div>
             <div className="rec-body">
               <div className="rec-title">JavaScript Part I</div>
-              <div className="rec-desc">Learn the fundamentals of JavaScript, the language of the web!</div>
+              <div className="rec-desc">
+                Learn the fundamentals of JavaScript, the language of the web!
+              </div>
             </div>
             <div className="rec-actions">
-              <button className="btn-green small">See More</button>
+              {/* TODO: άλλαξε το 1 στο πραγματικό id του course "JavaScript Part I" */}
+              <Link to="/courses/1">
+                <button className="btn-green small">See More</button>
+              </Link>
             </div>
           </div>
 
@@ -195,10 +198,15 @@ export default function MyCourses() {
             </div>
             <div className="rec-body">
               <div className="rec-title">C Part I</div>
-              <div className="rec-desc">Learn the fundamentals of C and low-level programming concepts.</div>
+              <div className="rec-desc">
+                Learn the fundamentals of C and low-level programming concepts.
+              </div>
             </div>
             <div className="rec-actions">
-              <button className="btn-green small">See More</button>
+              {/* TODO: άλλαξε το 2 στο πραγματικό id του course "C Part I" */}
+              <Link to="/courses/2">
+                <button className="btn-green small">See More</button>
+              </Link>
             </div>
           </div>
         </div>

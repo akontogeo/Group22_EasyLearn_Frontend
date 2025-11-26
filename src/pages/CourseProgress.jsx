@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getCourse, submitCourseReview, getCourseReviews } from '../api/courses';
 import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseProgress(){
   const { userId, courseId } = useParams();
+  const navigate = useNavigate();
   const { setUser } = useAuth();
   const [course, setCourse] = useState(null);
   const [progress, setProgress] = useState(null);
@@ -33,13 +34,19 @@ export default function CourseProgress(){
         
         // Check if user is enrolled
         const enrolledCourses = await getUserEnrolledCourses(userId);
-        const enrolled = enrolledCourses.some(c => c.courseId === Number(courseId));
+        const enrolled = enrolledCourses.some(c => Number(c.id) === Number(courseId));
+        
         setIsEnrolled(enrolled);
         
         // Load progress if enrolled
         if (enrolled) {
-          const progressData = await getProgress(userId, courseId);
-          setProgress(progressData);
+          try {
+            const progressData = await getProgress(userId, courseId);
+            setProgress(progressData);
+          } catch (e) {
+            console.log('No progress data yet, setting default');
+            setProgress({ progressPercentage: 0 });
+          }
         }
       }catch(e){
         console.error('Failed to load course progress:', e);
@@ -91,11 +98,9 @@ export default function CourseProgress(){
     }
     try {
       await withdrawFromCourse(userId, courseId);
-      setIsEnrolled(false);
-      setProgress(null);
+      navigate(`/courses/${courseId}`);
     } catch (e) {
       console.error('Failed to withdraw:', e);
-      alert('Failed to withdraw from course');
     }
   }
 
@@ -294,7 +299,8 @@ export default function CourseProgress(){
             </div>
           </div>
 
-          {/* Lessons List */}
+          {/* Lessons List - Only show if enrolled */}
+          {isEnrolled && (
           <div style={{ marginBottom: '24px' }}>
             {lessons.length === 0 && (
               <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
@@ -332,6 +338,7 @@ export default function CourseProgress(){
               </div>
             ))}
           </div>
+          )}
 
           {/* Action Buttons Row */}
           <div style={{
@@ -437,7 +444,8 @@ export default function CourseProgress(){
             )}
           </div>
 
-          {/* Bottom Action Buttons */}
+          {/* Bottom Action Buttons - Only show if enrolled */}
+          {isEnrolled && (
           <div style={{
             display: 'flex',
             gap: '12px',
@@ -491,6 +499,7 @@ export default function CourseProgress(){
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

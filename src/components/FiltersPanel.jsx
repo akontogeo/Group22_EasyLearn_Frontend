@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CATEGORIES, DIFFICULTY_LEVELS } from '../utils/constants';
 
 export default function FiltersPanel({ onApply }){
@@ -7,6 +8,7 @@ export default function FiltersPanel({ onApply }){
     difficulty: '',
     premium: ''
   });
+  const [searchParams] = useSearchParams();
 
   const handleCategoryChange = (cat) => {
     setFilters({ ...filters, category: filters.category === cat ? '' : cat });
@@ -25,14 +27,23 @@ export default function FiltersPanel({ onApply }){
     if(filters.category) params.category = filters.category;
     if(filters.difficulty) params.difficulty = filters.difficulty;
     if(filters.premium !== '') params.Premium = filters.premium === 'yes';
+    // Preserve search keyword if it exists
+    const keyword = searchParams.get('keyword');
+    if(keyword) params.keyword = keyword;
     onApply(params);
   };
 
   const handleClear = () => {
     const empty = { category: '', difficulty: '', premium: '' };
     setFilters(empty);
-    // Notify parent to load without filters
-    onApply({});
+    // When clearing filters, only keep the search keyword if present
+    const keyword = searchParams.get('keyword');
+    if(keyword) {
+      onApply({ keyword });
+    } else {
+      // Notify parent to load without filters
+      onApply({});
+    }
   };
 
   return (

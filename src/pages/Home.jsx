@@ -9,20 +9,29 @@ export default function Home(){
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const [hasFilters, setHasFilters] = useState(false);
+  const [hasSearchOrFilters, setHasSearchOrFilters] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState({});
 
-  const load = async (params = {}) => {
+  const load = async (filterParams = {}) => {
     setLoading(true);
     try{
+      // Build combined params
+      const params = { ...filterParams };
+      
       // Check for keyword in URL params
       const keyword = searchParams.get('keyword');
-      if(keyword) params.keyword = keyword;
+      if(keyword) {
+        params.keyword = keyword;
+      }
+      
+      // Store current filters for reset
+      setCurrentFilters(filterParams);
       
       const data = await searchCourses(params);
       setCourses(Array.isArray(data) ? data : []);
       
-      // Check if any filters are applied
-      setHasFilters(Object.keys(params).length > 0);
+      // Check if any search or filters are applied
+      setHasSearchOrFilters(Object.keys(params).length > 0);
     }catch(e){
       console.error('Search error:', e);
       setCourses([]);
@@ -31,14 +40,23 @@ export default function Home(){
     }
   }
 
-  // Load courses on mount and when search params change
+  // Load courses on mount and when search params or filters change
   useEffect(()=>{
-    load();
+    load(currentFilters);
   },[searchParams]);
 
   // Handle filter changes from sidebar
   const handleFilterApply = (filterParams) => {
     load(filterParams);
+  };
+
+  // Get display title
+  const getDisplayTitle = () => {
+    const keyword = searchParams.get('keyword');
+    if (keyword) {
+      return `Search Results for "${decodeURIComponent(keyword)}"`;
+    }
+    return 'Filtered Courses';
   };
 
   return (
@@ -61,11 +79,11 @@ export default function Home(){
 
         {/* Main Content Area */}
         <div>
-          {/* Show banner only when no filters/search are applied */}
-          {!hasFilters && <HomeBanner />}
+          {/* Show banner only when no search or filters are applied */}
+          {!hasSearchOrFilters && <HomeBanner />}
           
-          {/* Show course results when filters are applied */}
-          {hasFilters && (
+          {/* Show course results when search or filters are applied */}
+          {hasSearchOrFilters && (
             <div>
               <h2 style={{
                 marginBottom: '20px',
@@ -73,7 +91,7 @@ export default function Home(){
                 fontWeight: 600,
                 color: '#222'
               }}>
-                {searchParams.get('keyword') ? `Search Results for "${searchParams.get('keyword')}"` : 'Filtered Courses'}
+                {getDisplayTitle()}
               </h2>
               
               {loading && (
@@ -96,7 +114,7 @@ export default function Home(){
                   textAlign: 'center'
                 }}>
                   <p style={{ color: '#666', margin: 0 }}>
-                    No courses found. Try adjusting your filters.
+                    No courses found. Try adjusting your filters or search terms.
                   </p>
                 </div>
               )}

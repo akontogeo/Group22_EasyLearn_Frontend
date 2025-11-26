@@ -26,10 +26,17 @@ export default function FiltersPanel({ onApply }){
     const params = {};
     if(filters.category) params.category = filters.category;
     if(filters.difficulty) params.difficulty = filters.difficulty;
-    if(filters.premium !== '') params.Premium = filters.premium === 'yes';
+    // Only add Premium if a premium filter is selected
+    if(filters.premium === 'yes') {
+      params.Premium = true;
+    } else if(filters.premium === 'no') {
+      params.Premium = false;
+    }
     // Preserve search keyword if it exists
     const keyword = searchParams.get('keyword');
     if(keyword) params.keyword = keyword;
+    
+    console.log('Applying filters:', params);
     onApply(params);
   };
 

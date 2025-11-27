@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header(){
@@ -7,15 +7,58 @@ export default function Header(){
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const debounceTimer = useRef(null);
   const isHomePage = location.pathname === '/' || location.pathname === '/courses';
+
+  // Initialize search keyword from URL params
+  React.useEffect(() => {
+    const keyword = searchParams.get('keyword');
+    if (keyword) {
+      setSearchKeyword(decodeURIComponent(keyword));
+    }
+  }, [searchParams]);
+
+  const performSearch = (searchTerm) => {
+    const trimmed = searchTerm.trim();
+    if (trimmed) {
+      navigate(`/courses?keyword=${encodeURIComponent(trimmed)}`);
+    } else {
+      // If search is empty, go back to home with no filters
+      navigate('/courses');
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const newValue = e.target.value;
+    setSearchKeyword(newValue);
+    
+    // Clear previous debounce timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    // Set new debounce timer - search after 300ms of no typing
+    debounceTimer.current = setTimeout(() => {
+      performSearch(newValue);
+    }, 300);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if(searchKeyword.trim()){
-      navigate(`/courses?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-      // Trigger page reload or state update if needed
-      window.location.href = `/courses?keyword=${encodeURIComponent(searchKeyword.trim())}`;
+    // Clear any pending debounce timer
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
     }
+    performSearch(searchKeyword);
+  };
+
+  const handleSearchClear = () => {
+    setSearchKeyword('');
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    navigate('/courses');
   };
 
   return (
@@ -59,7 +102,10 @@ export default function Header(){
           <input
             type="text"
             value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
+            onChange={handleSearchChange}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSearch(e);
+            }}
             placeholder="What do you want to learn today?"
             style={{
               width: '100%',
@@ -71,6 +117,28 @@ export default function Header(){
               background: 'white'
             }}
           />
+          {searchKeyword && (
+            <button
+              type="button"
+              onClick={handleSearchClear}
+              style={{
+                position: 'absolute',
+                right: '40px',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#999',
+                fontSize: '18px',
+                lineHeight: 1
+              }}
+              title="Clear search"
+            >
+              ×
+            </button>
+          )}
           <button
             type="submit"
             style={{

@@ -4,6 +4,8 @@ import Home from '../pages/Home';
 import CourseDetails from '../pages/CourseDetails';
 import MyCourses from '../pages/MyCourses';
 import Profile from '../pages/Profile';
+import CourseProgress from '../pages/CourseProgress';
+import CourseReviews from '../pages/CourseReviews';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -16,8 +18,9 @@ export default function AppRouter(){
           <Route path="/" element={<Home/>} />
           <Route path="/courses" element={<Home/>} />
           <Route path="/courses/:id" element={<CourseDetails/>} />
+          <Route path="/courses/:courseId/reviews" element={<CourseReviews/>} />
           <Route path="/users/:userId/courses" element={<MyCourses/>} />
-          <Route path="/users/:userId/courses/:courseId" element={<CourseDetails/>} />
+          <Route path="/users/:userId/courses/:courseId" element={<CourseProgress/>} />
           <Route path="/users/:userId" element={<Profile/>} />
         </Routes>
       </div>

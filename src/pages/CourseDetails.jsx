@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getCourse, getCourseRatings } from '../api/courses';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getCourse, getCourseReviews } from '../api/courses';
 import { getUserEnrolledCourses, enrollInCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseDetails(){
   const { id, courseId, userId } = useParams();
+  const navigate = useNavigate();
   // Use courseId if available (from /users/:userId/courses/:courseId), otherwise use id (from /courses/:id)
   const actualCourseId = courseId || id;
   const { user } = useAuth();
@@ -22,8 +23,8 @@ export default function CourseDetails(){
         const c = await getCourse(actualCourseId);
         setCourse(c);
         
-        // Fetch ratings and calculate average
-        const r = await getCourseRatings(actualCourseId);
+        // Fetch reviews and calculate average
+        const r = await getCourseReviews(actualCourseId);
         if(r && r.length > 0){
           const avg = (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1);
           setAvgRating(avg);
@@ -31,12 +32,21 @@ export default function CourseDetails(){
           setAvgRating('N/A');
         }
 
-        // Check if user is enrolled (if we have userId from URL or context)
-        const currentUserId = userId || user?.userId;
-        if(currentUserId){
-          const enrolledCourses = await getUserEnrolledCourses(currentUserId);
-          const enrolled = enrolledCourses.some(ec => ec.courseId === Number(actualCourseId));
-          setIsEnrolled(enrolled);
+        // Check if user is enrolled (only when accessed via /courses/:id route)
+        // If userId is in params, we shouldn't be here - let the router handle it
+        if(!userId){
+          const currentUserId = user?.userId;
+          if(currentUserId){
+            const enrolledCourses = await getUserEnrolledCourses(currentUserId);
+            const enrolled = enrolledCourses.some(ec => Number(ec.id) === Number(actualCourseId));
+            
+            // If user is enrolled, redirect to the enrolled course view
+            if(enrolled){
+              navigate(`/users/${currentUserId}/courses/${actualCourseId}`);
+              return;
+            }
+            setIsEnrolled(enrolled);
+          }
         }
       }catch(e){
         console.error('Failed to load course:', e);
@@ -57,8 +67,7 @@ export default function CourseDetails(){
     try{
       setEnrolling(true);
       await enrollInCourse(currentUserId, actualCourseId);
-      alert('Successfully enrolled!');
-      setIsEnrolled(true);
+      navigate(`/users/${currentUserId}/courses/${actualCourseId}`);
     }catch(e){
       alert('Failed to enroll: ' + (e.response?.data?.message || e.message));
     }finally{

@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { getUserEnrolledCourses, getUserProfile, withdrawFromCourse } from '../api/users';
+import { getProgress } from '../api/users';
 import CourseCard from '../components/CourseCard';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import './MyCourses.css';
 
 export default function MyCourses() {
-  const userId = 1; // hardcoded for now
+  const { userId } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
+  const [coursesWithProgress, setCoursesWithProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -26,7 +30,31 @@ export default function MyCourses() {
         if (!mounted) return;
 
         setUser(userRes || null);
-        setCourses(Array.isArray(coursesRes) ? coursesRes : []);
+        const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
+        setCourses(coursesArray);
+        
+        // Load progress for each course
+        const coursesWithProgressData = await Promise.all(
+          coursesArray.map(async (course) => {
+            try {
+              const progressData = await getProgress(userId, course.courseId);
+              return {
+                ...course,
+                progressPercentage: progressData?.progressPercentage || 0
+              };
+            } catch (e) {
+              return {
+                ...course,
+                progressPercentage: 0
+              };
+            }
+          })
+        );
+        
+        // Sort by progress descending
+        coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
+        setCoursesWithProgress(coursesWithProgressData);
+        
       } catch (err) {
         console.error('Failed to load dashboard data', err);
         if (mounted) setError('Failed to load dashboard data.');
@@ -53,12 +81,49 @@ export default function MyCourses() {
   }
 
   function handleShowMore() {
-    alert('Show more clicked (not implemented).');
+    setShowAll(!showAll);
   }
 
-  function handleDelete(courseId) {
-    // stub for deleting / unenroll
-    alert(`Delete course ${courseId} (not implemented).`);
+  async function handleWithdraw(courseId, courseTitle) {
+    if (!window.confirm(`Are you sure you want to withdraw from "${courseTitle}"? Your progress will be lost.`)) {
+      return;
+    }
+    
+    try {
+      await withdrawFromCourse(userId, courseId);
+      // Reload courses after withdrawal
+      const coursesRes = await getUserEnrolledCourses(userId);
+      const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
+      setCourses(coursesArray);
+      
+      // Reload progress for remaining courses
+      const coursesWithProgressData = await Promise.all(
+        coursesArray.map(async (course) => {
+          try {
+            const progressData = await getProgress(userId, course.courseId);
+            return {
+              ...course,
+              progressPercentage: progressData?.progressPercentage || 0
+            };
+          } catch (e) {
+            return {
+              ...course,
+              progressPercentage: 0
+            };
+          }
+        })
+      );
+      
+      coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
+      setCoursesWithProgress(coursesWithProgressData);
+    } catch (err) {
+      console.error('Failed to withdraw from course', err);
+      alert('Failed to withdraw from course.');
+    }
+  }
+
+  function handleOpenCourse(courseId) {
+    navigate(`/users/${userId}/courses/${courseId}`);
   }
 
   if (loading) {
@@ -83,6 +148,10 @@ export default function MyCourses() {
     );
   }
 
+  // Determine which courses to display
+  const displayedCourses = showAll ? coursesWithProgress : coursesWithProgress.slice(0, 3);
+  const hasMoreThanThree = coursesWithProgress.length > 3;
+
   return (
     <div className="mycourses-page">
       <div className="container">
@@ -91,11 +160,11 @@ export default function MyCourses() {
         <div className="main-grid">
           <div className="left-column">
             <div className="courses-list">
-              {courses.length === 0 && (
+              {coursesWithProgress.length === 0 && (
                 <div className="empty">You have no enrolled courses.</div>
               )}
 
-              {courses.map((c) => {
+              {displayedCourses.map((c) => {
                 const id = c.id ?? c.courseId;
                 return (
                   <div key={id} className="course-card">
@@ -106,10 +175,11 @@ export default function MyCourses() {
                       </div>
                       <div className="course-info">
                         <div className="course-title">{c.title}</div>
-                        <div className="course-desc">{c.shortDescription}</div>
+                        <div className="course-desc">{c.description || c.shortDescription}</div>
                         <div className="course-meta">
                           <span className="meta-pill">{c.category}</span>
                           <span className="meta-pill">{c.difficulty}</span>
+                          <span className="meta-pill">Progress: {c.progressPercentage}%</span>
                         </div>
                       </div>
                     </div>
@@ -117,15 +187,15 @@ export default function MyCourses() {
                     <div className="course-actions">
                       <button
                         className="icon-btn delete"
-                        title="Remove"
-                        onClick={() => handleDelete(id)}
+                        title="Withdraw"
+                        onClick={() => handleWithdraw(id, c.title)}
                       >
                         🗑️
                       </button>
                       <button
                         className="icon-btn arrow"
                         title="Open course"
-                        onClick={() => alert(`Open course ${id} (not implemented).`)}
+                        onClick={() => handleOpenCourse(id)}
                       >
                         ➜
                       </button>
@@ -134,11 +204,13 @@ export default function MyCourses() {
                 );
               })}
 
-              <div className="show-more-wrap">
-                <button className="btn-green small" onClick={handleShowMore}>
-                  Show More
-                </button>
-              </div>
+              {hasMoreThanThree && (
+                <div className="show-more-wrap">
+                  <button className="btn-green small" onClick={handleShowMore}>
+                    {showAll ? 'Show Less' : 'Show More'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -167,46 +239,6 @@ export default function MyCourses() {
                   See Leaderboard
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <h2 className="recommend-title">We recommend:</h2>
-
-        <div className="recommend-list">
-          <div className="recommend-card">
-            <div className="rec-left">
-              <div className="rec-badge">JS</div>
-            </div>
-            <div className="rec-body">
-              <div className="rec-title">JavaScript Part I</div>
-              <div className="rec-desc">
-                Learn the fundamentals of JavaScript, the language of the web!
-              </div>
-            </div>
-            <div className="rec-actions">
-              {/* TODO: άλλαξε το 1 στο πραγματικό id του course "JavaScript Part I" */}
-              <Link to="/courses/1">
-                <button className="btn-green small">See More</button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="recommend-card">
-            <div className="rec-left">
-              <div className="rec-badge">C</div>
-            </div>
-            <div className="rec-body">
-              <div className="rec-title">C Part I</div>
-              <div className="rec-desc">
-                Learn the fundamentals of C and low-level programming concepts.
-              </div>
-            </div>
-            <div className="rec-actions">
-              {/* TODO: άλλαξε το 2 στο πραγματικό id του course "C Part I" */}
-              <Link to="/courses/2">
-                <button className="btn-green small">See More</button>
-              </Link>
             </div>
           </div>
         </div>

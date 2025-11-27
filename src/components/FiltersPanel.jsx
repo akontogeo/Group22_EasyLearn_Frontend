@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CATEGORIES, DIFFICULTY_LEVELS } from '../utils/constants';
 
 export default function FiltersPanel({ onApply }){
@@ -7,6 +8,7 @@ export default function FiltersPanel({ onApply }){
     difficulty: '',
     premium: ''
   });
+  const [searchParams] = useSearchParams();
 
   const handleCategoryChange = (cat) => {
     setFilters({ ...filters, category: filters.category === cat ? '' : cat });
@@ -24,8 +26,31 @@ export default function FiltersPanel({ onApply }){
     const params = {};
     if(filters.category) params.category = filters.category;
     if(filters.difficulty) params.difficulty = filters.difficulty;
-    if(filters.premium !== '') params.Premium = filters.premium === 'yes';
+    // Only add Premium if a premium filter is selected
+    if(filters.premium === 'yes') {
+      params.Premium = true;
+    } else if(filters.premium === 'no') {
+      params.Premium = false;
+    }
+    // Preserve search keyword if it exists
+    const keyword = searchParams.get('keyword');
+    if(keyword) params.keyword = keyword;
+    
+    console.log('Applying filters:', params);
     onApply(params);
+  };
+
+  const handleClear = () => {
+    const empty = { category: '', difficulty: '', premium: '' };
+    setFilters(empty);
+    // When clearing filters, only keep the search keyword if present
+    const keyword = searchParams.get('keyword');
+    if(keyword) {
+      onApply({ keyword });
+    } else {
+      // Notify parent to load without filters
+      onApply({});
+    }
   };
 
   return (
@@ -170,26 +195,47 @@ export default function FiltersPanel({ onApply }){
         </label>
       </div>
 
-      {/* Apply Button */}
-      <button
-        onClick={handleApply}
-        style={{
-          width: '100%',
-          background: '#2ea67a',
-          color: 'white',
-          border: 'none',
-          padding: '12px',
-          borderRadius: '6px',
-          fontSize: '15px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          transition: 'background 0.2s'
-        }}
-        onMouseOver={(e) => e.target.style.background = '#268c65'}
-        onMouseOut={(e) => e.target.style.background = '#2ea67a'}
-      >
-        Apply
-      </button>
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button
+          onClick={handleApply}
+          style={{
+            flex: 1,
+            background: '#2ea67a',
+            color: 'white',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '6px',
+            fontSize: '15px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'background 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#268c65'}
+          onMouseOut={(e) => e.target.style.background = '#2ea67a'}
+        >
+          Apply
+        </button>
+
+        <button
+          onClick={handleClear}
+          style={{
+            flex: 1,
+            background: '#e6e6e6',
+            color: '#333',
+            border: 'none',
+            padding: '12px',
+            borderRadius: '6px',
+            fontSize: '15px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+          onMouseOver={(e) => e.target.style.background = '#d4d4d4'}
+          onMouseOut={(e) => e.target.style.background = '#e6e6e6'}
+        >
+          Clear
+        </button>
+      </div>
     </div>
   );
 }

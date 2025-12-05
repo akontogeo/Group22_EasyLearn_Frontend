@@ -1,0 +1,66 @@
+name: FE CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ] 
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Χρησιμοποιούμε LTS έκδοση
+
+      - name: Install dependencies
+        run: npm install
+        
+      # ΠΡΟΣΘΗΚΗ: Κάνουμε Build την εφαρμογή, περνώντας το Backend URL
+      - name: Build Application for Cypress Run
+        run: npm run build
+        env:
+          # Χρησιμοποιούμε το σωστό όνομα μεταβλητής από το .env
+          REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }} 
+
+      # 1. RUN E2E ACCEPTANCE TESTS (Task C6)
+      - name: Run E2E Acceptance Tests
+        uses: cypress-io/github-action@v6
+        with:
+          # Εντολή για να σερβίρει την εφαρμογή locally (π.χ. 'serve -s build')
+          start: npm start 
+          # Περιμένει μέχρι να ανοίξει η εφαρμογή στο localhost:3000
+          wait-on: 'http://localhost:3000' 
+        env:
+          # Περνάμε το Backend URL στο Cypress για να "χτυπήσει" το Render Backend
+          REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }}
+
+
+
+
+  cd:
+    runs-on: ubuntu-latest
+    # Εκτελείται ΜΟΝΟ αν περάσει το job ci
+    needs: ci
+    # Εκτελείται ΜΟΝΟ στο main branch (όπως απαιτεί η εργασία)
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      # 1. Checkout (Χρειάζεται ξανά για το Deploy)
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      # 2. DEPLOY TO RENDER (Task C2 Completion)
+      - name: Deploy Frontend to Render
+        # Αυτό το Action χειρίζεται το deployment
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          # Το Render Service ID (για το Frontend)
+          service-id: ${{ secrets.RENDER_FE_SERVICE_ID }}
+          # Το Render API Key
+          api-key: ${{ secrets.RENDER_API_KEY }}

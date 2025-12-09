@@ -17,6 +17,7 @@ export default function CourseProgress(){
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
   const [submittingRating, setSubmittingRating] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   useEffect(() => {
     async function load(){
@@ -121,6 +122,10 @@ export default function CourseProgress(){
       
       console.log('Review submitted successfully');
       
+      // Show success message
+      setReviewSuccess(true);
+      setTimeout(() => setReviewSuccess(false), 3000);
+      
       // Close dialog and reset form
       setShowRatingDialog(false);
       setSelectedRating(0);
@@ -166,7 +171,7 @@ export default function CourseProgress(){
             {/* Star Rating */}
             <div style={{ marginBottom: '24px' }}>
               <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Your Rating:</div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div data-cy="review-stars" style={{ display: 'flex', gap: '8px' }}>
                 {[1, 2, 3, 4, 5].map(star => (
                   <button
                     key={star}
@@ -190,6 +195,7 @@ export default function CourseProgress(){
             <div style={{ marginBottom: '24px' }}>
               <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Comment (optional):</div>
               <textarea
+                data-cy="review-input"
                 value={ratingComment}
                 onChange={(e) => setRatingComment(e.target.value)}
                 placeholder="Share your thoughts about this course..."
@@ -229,6 +235,7 @@ export default function CourseProgress(){
                 Cancel
               </button>
               <button
+                data-cy="review-submit-button"
                 onClick={handleSubmitRating}
                 disabled={submittingRating || selectedRating === 0}
                 style={{
@@ -410,8 +417,8 @@ export default function CourseProgress(){
                 gap: '16px'
               }}>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
-                    My Progress
+                  <div data-cy="progress-indicator" style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+                    My Progress: {progressPercentage}% completed
                   </div>
                   <div style={{
                     width: '200px',
@@ -500,6 +507,26 @@ export default function CourseProgress(){
             </div>
           </div>
           )}
+
+          {/* Review Success Message */}
+          {reviewSuccess && (
+            <div data-cy="review-success" style={{ 
+              marginTop: 16, 
+              padding: 12, 
+              background: '#d4edda', 
+              color: '#155724', 
+              borderRadius: 6,
+              fontSize: 14,
+              fontWeight: 500
+            }}>
+              Review submitted successfully!
+            </div>
+          )}
+
+          {/* Review List - placeholder για testing */}
+          <div data-cy="review-list" style={{ marginTop: 16, display: 'none' }}>
+            {/* Reviews would be listed here */}
+          </div>
         </div>
       </div>
     </div>

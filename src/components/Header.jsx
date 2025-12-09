@@ -100,6 +100,7 @@ export default function Header(){
           alignItems: 'center'
         }}>
           <input
+            data-cy="search-input"
             type="text"
             value={searchKeyword}
             onChange={handleSearchChange}

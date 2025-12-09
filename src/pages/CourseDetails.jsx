@@ -89,7 +89,7 @@ export default function CourseDetails(){
       <div className="card" style={{marginBottom: 24, position: 'relative'}}>
         {/* Title with Image on the right */}
         <div style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, marginTop: 32}}>
-          <h1 style={{
+          <h1 data-cy="course-title" style={{
             margin: 0, 
             fontSize: 32, 
             fontWeight: 600,
@@ -188,7 +188,8 @@ export default function CourseDetails(){
         {/* Enroll Button Row */}
         {!isEnrolled && (
           <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
-            <button 
+            <button
+              data-cy="enroll-button" 
               onClick={handleEnroll}
               disabled={enrolling}
               style={{
@@ -209,7 +210,7 @@ export default function CourseDetails(){
         )}
         
         {isEnrolled && (
-          <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
+          <div data-cy="enroll-success" style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16}}>
             <span style={{
               color: 'var(--accent)',
               fontSize: 16,

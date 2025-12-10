@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function Header(){
+export default function Header() {
   const { user } = useAuth();
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
@@ -32,12 +32,12 @@ export default function Header(){
   const handleSearchChange = (e) => {
     const newValue = e.target.value;
     setSearchKeyword(newValue);
-    
+
     // Clear previous debounce timer
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
-    
+
     // Set new debounce timer - search after 300ms of no typing
     debounceTimer.current = setTimeout(() => {
       performSearch(newValue);
@@ -62,44 +62,60 @@ export default function Header(){
   };
 
   return (
-    <header style={{
-      background: '#b8e6d5',
-      padding: '16px 32px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '24px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
-    }}>
-      {/* Logo */}
-      <Link to="/" style={{
+    <header
+      style={{
+        background: '#b8e6d5',
+        padding: '16px 32px',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        textDecoration: 'none',
-        color: '#2ea67a',
-        fontWeight: 700,
-        fontSize: '18px',
-        whiteSpace: 'nowrap'
-      }}>
-        <img src="/Logo.png" alt="EasyLearn" style={{width: 40, height: 40, objectFit: 'contain'}} />
+        gap: '24px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+      }}
+    >
+      {/* Logo */}
+      <Link
+        to="/"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          textDecoration: 'none',
+          color: '#2ea67a',
+          fontWeight: 700,
+          fontSize: '18px',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <img
+          src="/Logo.png"
+          alt="EasyLearn"
+          style={{ width: 40, height: 40, objectFit: 'contain' }}
+        />
         EasyLearn
       </Link>
 
       {/* Search Bar */}
-      <form onSubmit={handleSearch} style={{
-        flex: 1,
-        maxWidth: '600px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-      }}>
-        <div style={{
+      <form
+        onSubmit={handleSearch}
+        data-cy="search-form"
+        style={{
           flex: 1,
-          position: 'relative',
+          maxWidth: '600px',
           display: 'flex',
-          alignItems: 'center'
-        }}>
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
           <input
+            data-cy="search-input"
             type="text"
             value={searchKeyword}
             onChange={handleSearchChange}
@@ -107,6 +123,7 @@ export default function Header(){
               if (e.key === 'Enter') handleSearch(e);
             }}
             placeholder="What do you want to learn today?"
+            data-cy="search-input"
             style={{
               width: '100%',
               padding: '10px 40px 10px 16px',
@@ -114,7 +131,7 @@ export default function Header(){
               borderRadius: '6px',
               fontSize: '14px',
               outline: 'none',
-              background: 'white'
+              background: 'white',
             }}
           />
           {searchKeyword && (
@@ -132,7 +149,7 @@ export default function Header(){
                 alignItems: 'center',
                 color: '#999',
                 fontSize: '18px',
-                lineHeight: 1
+                lineHeight: 1,
               }}
               title="Clear search"
             >
@@ -149,62 +166,68 @@ export default function Header(){
               cursor: 'pointer',
               padding: '4px',
               display: 'flex',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.35-4.35"/>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
             </svg>
           </button>
         </div>
       </form>
 
       {/* Right Navigation */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        marginLeft: 'auto'
-      }}>
-        <Link 
-          to={user ? `/users/${user.userId}/courses` : '/users/1/courses'} 
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '20px',
+          marginLeft: 'auto',
+        }}
+      >
+        <Link
+          to={user ? `/users/${user.userId}/courses` : '/users/1/courses'}
           style={{
             textDecoration: 'none',
             color: '#333',
             fontSize: '14px',
-            fontWeight: 500
+            fontWeight: 500,
           }}
         >
           My Courses
         </Link>
-        <Link 
-          to={user ? `/users/${user.userId}` : '/users/1'} 
+        <Link
+          to={user ? `/users/${user.userId}` : '/users/1'}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             textDecoration: 'none',
-            color: '#333'
+            color: '#333',
           }}
         >
-          <div style={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            background: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '18px'
-          }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '18px',
+            }}
+          >
             👤
           </div>
-          <span style={{
-            fontSize: '14px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap'
-          }}>
+          <span
+            style={{
+              fontSize: '14px',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+            }}
+          >
             Hi, {user?.username || 'User'}!
           </span>
         </Link>

@@ -130,7 +130,7 @@ export default function MyCourses() {
     return (
       <div className="mycourses-page">
         <div className="container">
-          <h1 className="page-title">MY COURSES</h1>
+          <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
           <div className="loading">Loading...</div>
         </div>
       </div>
@@ -141,7 +141,7 @@ export default function MyCourses() {
     return (
       <div className="mycourses-page">
         <div className="container">
-          <h1 className="page-title">MY COURSES</h1>
+          <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
           <div className="error">{error}</div>
         </div>
       </div>
@@ -155,11 +155,11 @@ export default function MyCourses() {
   return (
     <div className="mycourses-page">
       <div className="container">
-        <h1 className="page-title">MY COURSES</h1>
+        <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
 
         <div className="main-grid">
           <div className="left-column">
-            <div className="courses-list">
+            <div className="courses-list" data-cy="my-courses-section">
               {coursesWithProgress.length === 0 && (
                 <div className="empty">You have no enrolled courses.</div>
               )}
@@ -167,7 +167,7 @@ export default function MyCourses() {
               {displayedCourses.map((c) => {
                 const id = c.id ?? c.courseId;
                 return (
-                  <div key={id} className="course-card">
+                  <div key={id} className="course-card" data-cy="my-course-card">
                     <div className="course-left">
                       <div className="thumb-placeholder">
                         {/* simple placeholder icon from first letters */}
@@ -206,7 +206,7 @@ export default function MyCourses() {
 
               {hasMoreThanThree && (
                 <div className="show-more-wrap">
-                  <button className="btn-green small" onClick={handleShowMore}>
+                  <button className="btn-green small" onClick={handleShowMore} data-cy="dashboard-show-more">
                     {showAll ? 'Show Less' : 'Show More'}
                   </button>
                 </div>

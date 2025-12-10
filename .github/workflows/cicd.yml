@@ -20,6 +20,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      # Install serve to serve the production build
+      - name: Install serve globally
+        run: npm install -g serve
         
       # ΠΡΟΣΘΗΚΗ: Κάνουμε Build την εφαρμογή, περνώντας το Backend URL
       - name: Build Application for Cypress Run
@@ -29,16 +33,17 @@ jobs:
           REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }} 
 
       # 1. RUN E2E ACCEPTANCE TESTS (Task C6)
+      # Tests run on production build with deployed Render backend
       - name: Run E2E Acceptance Tests
         uses: cypress-io/github-action@v6
         with:
-          # Εντολή για να σερβίρει την εφαρμογή locally (π.χ. 'serve -s build')
-          start: npm start 
-          # Περιμένει μέχρι να ανοίξει η εφαρμογή στο localhost:3000
-          wait-on: 'http://localhost:3000' 
-        env:
-          # Περνάμε το Backend URL στο Cypress για να "χτυπήσει" το Render Backend
-          REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }}
+          # Serve the production build (already has backend URL baked in)
+          start: npx serve -s build -l 3000
+          # Wait for the app to be ready
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          # Run in headless Electron
+          browser: electron
 
 
 

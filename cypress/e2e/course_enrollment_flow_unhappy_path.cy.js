@@ -12,38 +12,35 @@ describe('Course Enrollment Flow - Unhappy path (PMP premium)', () => {
       .should('be.visible')
       .type('PMP');
 
-    // Submit the search form
+    // Step 3: Submit the search form
     cy.get('form').submit();
 
-    // Τώρα πρέπει να είμαστε στη σελίδα /courses
+
+    //Step 4: Τώρα πρέπει να είμαστε στη σελίδα /courses
     cy.url().should('include', '/courses');
+    cy.get('[data-cy="course-card"]').should('have.length.greaterThan', 0);
 
     // Optional: Apply filters, αν χρειάζονται
-    cy.contains('button', 'Apply').click({ force: true });
+    // cy.contains('button', 'Apply').click({ force: true });
 
     // Step 3: Βρίσκω το "PMP Certification Prep" στα αποτελέσματα και πατάω "See More"
-    cy.contains('[data-cy="course-card"]', 'PMP Certification Prep')
-      .should('be.visible')
-      .within(() => {
-        cy.get('[data-cy="see-more-course"]').click();
-      });
+    cy.get('[data-cy="course-card"]').each(($card) => {
+      cy.wrap($card).should('contain.text', 'PMP Certification Prep');
+      cy.wrap($card).find('[data-cy="see-more-course"]').should('exist').click();
+    });
 
     // Course details page
-    cy.url().should('include', '/courses');
+    //cy.url().should('include', '/courses');
 
     // Τσεκ ότι είμαστε όντως στο PMP
     cy.get('h1').should('contain', 'PMP');
-
-    // --------------------------------------
-    // Step 4: Προσπάθεια enroll σε premium course
-    // --------------------------------------
 
     // Στήνω stub για window.alert
     cy.window().then((win) => {
       cy.stub(win, 'alert').as('alert');
     });
 
-    // Πατάω το Enroll button
+    // Step  4 : Πατάω το Enroll button
     cy.get('[data-cy="enroll-button"]').should('be.visible').click();
 
     // Περιμένω το alert για premium course

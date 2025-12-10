@@ -28,8 +28,12 @@ describe('Review & Progress Flow', () => {
 
     // Step 3: Έλεγχος progress indicator
     cy.get('[data-cy="progress-indicator"]').should('be.visible');
+    // Step 4: modal
+    cy.get('[data-cy="rate-button"]').click();
 
     // Step 4: Υποβολή review
+    cy.get('[data-cy="review-stars"] button').eq(3).click();
+
     cy.get('[data-cy="review-input"]').should('be.visible').clear().type('Great course!');
     cy.get('[data-cy="review-submit-button"]').click();
 

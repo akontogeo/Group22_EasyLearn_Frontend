@@ -460,6 +460,7 @@ export default function CourseProgress(){
             borderTop: '1px solid #e0e0e0'
           }}>
             <button
+              data-cy="rate-button"
               onClick={() => setShowRatingDialog(true)}
               style={{
                 background: '#2ea67a',

@@ -37,16 +37,13 @@ jobs:
       - name: Run E2E Acceptance Tests
         uses: cypress-io/github-action@v6
         with:
-          # Serve the production build (not dev mode!)
+          # Serve the production build (already has backend URL baked in)
           start: npx serve -s build -l 3000
           # Wait for the app to be ready
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           # Run in headless Electron
           browser: electron
-        env:
-          # Frontend (localhost) connects to deployed backend on Render
-          REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }}
 
 
 

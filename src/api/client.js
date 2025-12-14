@@ -20,7 +20,7 @@ client.interceptors.request.use(cfg => {
   console.log('API Request:', cfg.method?.toUpperCase(), cfg.url, cfg.data);
   return cfg;
 });
-//Response interceptor - log API call
+Response interceptor - log API call
 // Log responses for debugging
 client.interceptors.response.use(
   response => {

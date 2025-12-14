@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+
+// Course reviews page - display all user reviews and ratings
 import { getCourse, getCourseReviews } from '../api/courses';
 
 export default function CourseReviews() {

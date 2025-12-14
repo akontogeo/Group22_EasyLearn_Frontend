@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+
+// Home page - search & filter courses
 import { searchCourses } from '../api/courses';
 import HomeBanner from '../components/HomeBanner';
 import FiltersPanel from '../components/FiltersPanel';
 import CourseCard from '../components/CourseCard';
 
 export default function Home(){
+  // State for courses, loading, search params, and filters
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const [hasSearchOrFilters, setHasSearchOrFilters] = useState(false);
   const [currentFilters, setCurrentFilters] = useState({});
 
+  // Fetch courses with applied filters
   const load = async (filterParams = {}) => {
     setLoading(true);
     try{
-      // Build combined params
+      // Merge filter params with URL search params
       const params = { ...filterParams };
       
       // Check for keyword in URL params

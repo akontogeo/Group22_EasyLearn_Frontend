@@ -2,8 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * CourseCard Component
- * Displays a course card with thumbnail, title, description, and actions
+ * Course card component - displays a course with thumbnail, title, and actions
  * Used in search results and course listings
  */
 export default function CourseCard({course, actions}){

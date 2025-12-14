@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+
+// Course progress page - lessons, quizzes, reviews, and ratings
 import { getCourse, submitCourseReview, getCourseReviews } from '../api/courses';
 import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseProgress(){
+  // Manage user progress, lessons, quizzes, and course reviews
   const { userId, courseId } = useParams();
   const navigate = useNavigate();
   const { setUser } = useAuth();

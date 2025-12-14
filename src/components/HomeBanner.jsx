@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Home page banner with background word cloud pattern
 export default function HomeBanner(){
   const words = [
     'Programming', 'Digital Marketing', 'Data Science', 'Machine Learning',

@@ -1,13 +1,15 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserProfile } from '../api/users';
 
+// Global auth context for managing user authentication state
 const AuthContext = createContext();
 
+// Auth provider - wraps app and manages user state
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auto-login with default user on mount
+  // Auto-login default user on app startup
   useEffect(() => {
     async function autoLogin() {
       try {

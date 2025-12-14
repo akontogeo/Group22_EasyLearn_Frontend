@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
+
+// User profile page - display user info and account settings
 import { getUserProfile, updateUser } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 import { Link, useParams } from 'react-router-dom';
 
 export default function Profile(){
+  // Manage user profile and premium status
   const { userId } = useParams();
   const { setUser } = useAuth();
   const [profile, setProfile] = useState(null);

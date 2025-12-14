@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
+
+// Main app router with all page routes
 import Home from '../pages/Home';
 import CourseDetails from '../pages/CourseDetails';
 import MyCourses from '../pages/MyCourses';
@@ -10,6 +12,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 export default function AppRouter(){
+  // Layout: header, routes, footer
   return (
     <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%'}}>
       <Header />

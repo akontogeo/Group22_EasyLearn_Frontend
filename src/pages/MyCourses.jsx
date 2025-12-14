@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+
+// My courses page - display enrolled courses with progress
 import { getUserEnrolledCourses, getUserProfile, withdrawFromCourse } from '../api/users';
 import { getProgress } from '../api/users';
 import CourseCard from '../components/CourseCard';
@@ -6,6 +8,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import './MyCourses.css';
 
 export default function MyCourses() {
+  // Display user's enrolled courses with progress tracking
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);

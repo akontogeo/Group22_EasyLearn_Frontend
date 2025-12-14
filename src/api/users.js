@@ -1,19 +1,19 @@
 import client from './client';
 
-// Extract user data from API response wrapper
+// Helper to unwrap backend response format: { success, data, message }
 const unwrap = (response) => response.data?.data || response.data;
 
-// Fetch user profile by ID
+// GET /users/{userId}
 export const getUserProfile = (userId) => {
   return client.get(`/users/${userId}`).then(r => unwrap(r));
 };
 
-// Update user profile data
+// PUT /users/{userId}
 export const updateUser = (userId, payload) => {
   return client.put(`/users/${userId}`, payload).then(r => unwrap(r));
 };
 
-// Get list of courses user is enrolled in
+// GET /users/{userId}/courses
 export const getUserEnrolledCourses = (userId) => {
   return client.get(`/users/${userId}/courses`)
     .then(r => {
@@ -23,17 +23,17 @@ export const getUserEnrolledCourses = (userId) => {
     .catch(() => []);
 };
 
-// Enroll user in a course
+// POST /users/{userId}/courses
 export const enrollInCourse = (userId, courseId) => {
   return client.post(`/users/${userId}/courses`, { courseId }).then(r => unwrap(r));
 };
 
-// Withdraw user from an enrolled course
+// DELETE /users/{userId}/courses/{courseId}
 export const withdrawFromCourse = (userId, courseId) => {
   return client.delete(`/users/${userId}/courses/${courseId}`);
 };
 
-// Fetch user's progress in a specific course
+// GET /users/{userId}/courses/{courseId}/progress
 export const getProgress = (userId, courseId) => {
   return client.get(`/users/${userId}/courses/${courseId}/progress`).then(r => unwrap(r));
 };

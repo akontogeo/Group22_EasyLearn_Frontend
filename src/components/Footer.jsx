@@ -1,6 +1,5 @@
 import React from 'react';
 
-// Footer component with copyright, links, and contact info
 export default function Footer() {
   return (
     <footer style={{

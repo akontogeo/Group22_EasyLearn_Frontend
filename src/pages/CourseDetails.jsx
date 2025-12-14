@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Course details page - show course info and enroll/review options
 import { getCourse, getCourseReviews } from '../api/courses';
 import { getUserEnrolledCourses, enrollInCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseDetails(){
-  // Handle course details for both enrolled and non-enrolled views
   const { id, courseId, userId } = useParams();
   const navigate = useNavigate();
   // Use courseId if available (from /users/:userId/courses/:courseId), otherwise use id (from /courses/:id)

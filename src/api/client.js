@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// API base URL from environment or fallback to localhost
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5000';
 
-// Axios client with base config
 const client = axios.create({
   baseURL: API_BASE,
   headers: {
@@ -11,7 +9,7 @@ const client = axios.create({
   }
 });
 
-// Request interceptor - attach auth token to headers
+// Attach token if present
 client.interceptors.request.use(cfg => {
   const token = localStorage.getItem('auth_token');
   if(token){
@@ -20,7 +18,7 @@ client.interceptors.request.use(cfg => {
   console.log('API Request:', cfg.method?.toUpperCase(), cfg.url, cfg.data);
   return cfg;
 });
-Response interceptor - log API call
+
 // Log responses for debugging
 client.interceptors.response.use(
   response => {

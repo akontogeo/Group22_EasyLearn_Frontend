@@ -1,9 +1,9 @@
 import client from './client';
 
-// Extract course data from API response wrapper
+// Helper to unwrap backend response format: { success, data, message }
 const unwrap = (response) => response.data?.data || response.data;
 
-// Filter courses by keyword, category, difficulty, and premium status
+// Client-side filtering of courses
 const filterCourses = (courses, params = {}) => {
   params = params || {};
   

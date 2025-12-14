@@ -1,5 +1,5 @@
 # EasyLearn Frontend
-
+#
 **Group 22 - Software Engineering Lab 2**
 
 React-based frontend για την εκπαιδευτική πλατφόρμα EasyLearn. Υλοποιημένο με Create React App και συνδέεται με το backend API.

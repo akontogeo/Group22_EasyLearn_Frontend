@@ -1,3 +1,4 @@
+// Main router component - defines all application routes
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from '../pages/Home';
@@ -9,11 +10,13 @@ import CourseReviews from '../pages/CourseReviews';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
+// Application routing layout with header, routes, and footer
 export default function AppRouter(){
   return (
     <div style={{display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%'}}>
       <Header />
       <div className="container" style={{flex: '1 1 auto', width: '100%', maxWidth: '1600px'}}>
+        {/* Define all application routes */}
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/courses" element={<Home/>} />

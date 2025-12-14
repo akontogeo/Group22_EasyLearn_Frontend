@@ -1,13 +1,15 @@
+// Authentication context - manages user login state and profile data
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { getUserProfile } from '../api/users';
 
 const AuthContext = createContext();
 
+// Provider component that manages authentication state for the entire app
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auto-login with default user on mount
+  // Auto-login with default user when app loads
   useEffect(() => {
     async function autoLogin() {
       try {
@@ -23,10 +25,12 @@ export const AuthProvider = ({ children }) => {
     autoLogin();
   }, []);
 
+  // Store authentication token in localStorage
   const login = (token) => {
     localStorage.setItem('auth_token', token);
   };
 
+  // Clear authentication data on logout
   const logout = () => {
     localStorage.removeItem('auth_token');
     setUser(null);

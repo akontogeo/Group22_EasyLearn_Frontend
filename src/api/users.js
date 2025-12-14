@@ -1,19 +1,20 @@
+// API functions for user-related operations
 import client from './client';
 
 // Helper to unwrap backend response format: { success, data, message }
 const unwrap = (response) => response.data?.data || response.data;
 
-// GET /users/{userId}
+// Fetch user profile information
 export const getUserProfile = (userId) => {
   return client.get(`/users/${userId}`).then(r => unwrap(r));
 };
 
-// PUT /users/{userId}
+// Update user profile
 export const updateUser = (userId, payload) => {
   return client.put(`/users/${userId}`, payload).then(r => unwrap(r));
 };
 
-// GET /users/{userId}/courses
+// Get all courses enrolled by a user
 export const getUserEnrolledCourses = (userId) => {
   return client.get(`/users/${userId}/courses`)
     .then(r => {

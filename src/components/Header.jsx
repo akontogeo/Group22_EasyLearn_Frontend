@@ -9,7 +9,6 @@ export default function Header() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const debounceTimer = useRef(null);
-  const isHomePage = location.pathname === '/' || location.pathname === '/courses';
 
   // Initialize search keyword from URL params
   React.useEffect(() => {

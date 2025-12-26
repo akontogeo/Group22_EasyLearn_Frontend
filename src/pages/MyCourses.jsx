@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { getUserEnrolledCourses, getUserProfile, withdrawFromCourse } from '../api/users';
 import { getProgress } from '../api/users';
-import CourseCard from '../components/CourseCard';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './MyCourses.css';
 
 export default function MyCourses() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [courses, setCourses] = useState([]);
   const [coursesWithProgress, setCoursesWithProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,7 +29,6 @@ export default function MyCourses() {
 
         setUser(userRes || null);
         const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
-        setCourses(coursesArray);
         
         // Load progress for each course
         const coursesWithProgressData = await Promise.all(
@@ -94,7 +91,6 @@ export default function MyCourses() {
       // Reload courses after withdrawal
       const coursesRes = await getUserEnrolledCourses(userId);
       const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
-      setCourses(coursesArray);
       
       // Reload progress for remaining courses
       const coursesWithProgressData = await Promise.all(

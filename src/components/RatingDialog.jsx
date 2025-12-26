@@ -2,6 +2,15 @@ import React from 'react';
 
 /**
  * RatingDialog - Course rating submission dialog
+ * Modal dialog that allows users to rate courses with 1-5 stars and leave comments
+ * @param {boolean} show - Controls dialog visibility
+ * @param {number} selectedRating - Currently selected star rating (1-5)
+ * @param {function} setSelectedRating - Function to update selected rating
+ * @param {string} ratingComment - User's review comment text
+ * @param {function} setRatingComment - Function to update comment text
+ * @param {boolean} submittingRating - Loading state during submission
+ * @param {function} onSubmit - Callback function when form is submitted
+ * @param {function} onCancel - Callback function when dialog is cancelled
  */
 export default function RatingDialog({
   show,
@@ -13,9 +22,11 @@ export default function RatingDialog({
   onSubmit,
   onCancel
 }) {
+  // Hide dialog when show prop is false
   if (!show) return null;
 
   return (
+    /* Full-screen modal overlay with semi-transparent background */
     <div style={{
       position: 'fixed',
       top: 0,
@@ -28,6 +39,7 @@ export default function RatingDialog({
       justifyContent: 'center',
       zIndex: 1000
     }}>
+      {/* Main dialog container with rounded corners and shadow */}
       <div style={{
         background: 'white',
         borderRadius: '12px',
@@ -36,12 +48,16 @@ export default function RatingDialog({
         width: '90%',
         boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
       }}>
+        {/* Dialog title */}
         <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px' }}>Rate this Course</h2>
         
-        {/* Star Rating */}
+        {/* Star Rating Section */}
         <div style={{ marginBottom: '24px' }}>
+          {/* Rating section label */}
           <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Your Rating:</div>
+          {/* Interactive star buttons for rating selection */}
           <div data-cy="review-stars" style={{ display: 'flex', gap: '8px' }}>
+            {/* Generate 5 star buttons with click handlers */}
             {[1, 2, 3, 4, 5].map(star => (
               <button
                 key={star}
@@ -61,9 +77,11 @@ export default function RatingDialog({
           </div>
         </div>
 
-        {/* Comment */}
+        {/* Comment Section */}
         <div style={{ marginBottom: '24px' }}>
+          {/* Comment input label */}
           <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Comment (optional):</div>
+          {/* Multi-line text input for user review comments */}
           <textarea
             data-cy="review-input"
             value={ratingComment}
@@ -82,8 +100,9 @@ export default function RatingDialog({
           />
         </div>
 
-        {/* Buttons */}
+        {/* Action Buttons Section */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          {/* Cancel button to close dialog without saving */}
           <button
             onClick={onCancel}
             disabled={submittingRating}
@@ -100,6 +119,7 @@ export default function RatingDialog({
           >
             Cancel
           </button>
+          {/* Submit button to save rating and comment */}
           <button
             data-cy="review-submit-button"
             onClick={onSubmit}
@@ -115,6 +135,7 @@ export default function RatingDialog({
               cursor: (submittingRating || selectedRating === 0) ? 'not-allowed' : 'pointer'
             }}
           >
+            {/* Dynamic button text based on submission state */}
             {submittingRating ? 'Submitting...' : 'Submit Rating'}
           </button>
         </div>

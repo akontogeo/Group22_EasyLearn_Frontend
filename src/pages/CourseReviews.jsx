@@ -73,9 +73,11 @@ export default function CourseReviews() {
           marginBottom: '24px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
         }}>
+          {/* Course title display */}
           <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: '#222' }}>
             {course.title}
           </h1>
+          {/* Rating summary with star icon and review count */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -108,6 +110,7 @@ export default function CourseReviews() {
               padding: '40px 20px',
               color: '#999'
             }}>
+              {/* Empty state with encouraging message */}
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
               <p style={{ margin: 0, fontSize: '16px' }}>No reviews yet</p>
               <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>Be the first to review this course!</p>
@@ -156,6 +159,7 @@ export default function CourseReviews() {
                           gap: '2px',
                           marginTop: '4px'
                         }}>
+                          {/* Generate 5 star rating display */}
                           {[1, 2, 3, 4, 5].map(star => (
                             <span key={star} style={{
                               color: star <= review.stars ? '#ffc107' : '#ddd',

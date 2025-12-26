@@ -7,35 +7,41 @@ import { useAuth } from '../context/AuthContext';
 /**
  * CourseDetails - Shows course information with enrollment option
  * Handles both /courses/:id and /users/:userId/courses/:courseId routes
+ * Displays course metadata, rating, description and enrollment functionality
  */
 export default function CourseDetails(){
+  // Extract route parameters for flexible routing support
   const { id, courseId, userId } = useParams();
   const navigate = useNavigate();
+  // Use courseId from nested route or id from simple route
   const actualCourseId = courseId || id;
   const { user } = useAuth();
   
-  // Shared styles
+  // Shared styles for consistent metadata display
   const metaLabelStyle = { fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 500 };
   const metaValueStyle = { fontSize: 15, color: '#222', fontWeight: 500 };
   
+  // State management for course data and UI states
   const [course, setCourse] = useState(null);
   const [avgRating, setAvgRating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
 
+  // Load course data and check enrollment status on mount
   useEffect(()=>{
     async function load(){
       try{
         setLoading(true);
+        // Fetch course details
         const c = await getCourse(actualCourseId);
         setCourse(c);
         
-        // Calculate average rating
+        // Calculate average rating from reviews
         const r = await getCourseReviews(actualCourseId);
         setAvgRating(r?.length > 0 ? (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1) : 'N/A');
 
-        // Check enrollment and redirect if needed
+        // Check enrollment and redirect if already enrolled
         if(!userId){
           const currentUserId = user?.userId;
           if(currentUserId){
@@ -57,29 +63,34 @@ export default function CourseDetails(){
     load();
   },[actualCourseId, userId, user]);
 
-  // Handle enrollment
+  // Handle enrollment process with error handling
   const handleEnroll = async () => {
+    // Get user ID from route params or auth context
     const currentUserId = userId || user?.userId;
     if(!currentUserId) return alert('Please log in to enroll');
     
     try{
       setEnrolling(true);
+      // Enroll user in course and redirect to progress page
       await enrollInCourse(currentUserId, actualCourseId);
       navigate(`/users/${currentUserId}/courses/${actualCourseId}`);
     }catch(e){
+      // Display user-friendly error message
       alert('Failed to enroll: ' + (e.response?.data?.message || e.message));
     }finally{
       setEnrolling(false);
     }
   };
 
+  // Loading and error state handling
   if(loading) return <div className="card">Loading course...</div>;
   if(!course) return <div className="card">Course not found</div>;
 
   return (
+    /* Main container with centered layout */
     <div style={{maxWidth: '1100px', margin: '0 auto', width: '100%'}}>
       <div className="card" style={{marginBottom: 24, position: 'relative'}}>
-        {/* Title with Image */}
+        {/* Course title and image header section */}
         <div style={{display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, marginTop: 32}}>
           <h1 data-cy="course-title" style={{margin: 0, fontSize: 32, fontWeight: 600, color: '#222', flex: 1, paddingRight: 20, paddingTop: 24}}>
             {course.title}
@@ -102,7 +113,7 @@ export default function CourseDetails(){
           <p style={{margin: 0, lineHeight: 1.7, color: '#333', fontSize: 14}}>{course.description}</p>
         </div>
 
-        {/* Metadata */}
+        {/* Course metadata display with category, difficulty, pricing and rating */}
         <div style={{display: 'flex', alignItems: 'center', gap: 40, marginBottom: 20, paddingTop: 16, borderTop: '1px solid #e5e5e5'}}>
           <div>
             <div style={metaLabelStyle}>Category</div>

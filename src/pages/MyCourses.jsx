@@ -30,27 +30,7 @@ export default function MyCourses() {
         setUser(userRes || null);
         const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
         
-        // Load progress for each course
-        const coursesWithProgressData = await Promise.all(
-          coursesArray.map(async (course) => {
-            try {
-              const progressData = await getProgress(userId, course.courseId);
-              return {
-                ...course,
-                progressPercentage: progressData?.progressPercentage || 0
-              };
-            } catch (e) {
-              return {
-                ...course,
-                progressPercentage: 0
-              };
-            }
-          })
-        );
-        
-        // Sort by progress descending
-        coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
-        setCoursesWithProgress(coursesWithProgressData);
+        await loadCoursesWithProgress(coursesArray);
         
       } catch (err) {
         console.error('Failed to load dashboard data', err);
@@ -65,6 +45,30 @@ export default function MyCourses() {
       mounted = false;
     };
   }, [userId]);
+
+  // Helper function to load progress data and update state
+  async function loadCoursesWithProgress(coursesArray) {
+    const coursesWithProgressData = await Promise.all(
+      coursesArray.map(async (course) => {
+        try {
+          const progressData = await getProgress(userId, course.courseId);
+          return {
+            ...course,
+            progressPercentage: progressData?.progressPercentage || 0
+          };
+        } catch (e) {
+          return {
+            ...course,
+            progressPercentage: 0
+          };
+        }
+      })
+    );
+    
+    // Sort by progress descending
+    coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
+    setCoursesWithProgress(coursesWithProgressData);
+  }
 
   function handleRegisterClick() {
     // stub for "Register" / Become premium
@@ -92,26 +96,7 @@ export default function MyCourses() {
       const coursesRes = await getUserEnrolledCourses(userId);
       const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
       
-      // Reload progress for remaining courses
-      const coursesWithProgressData = await Promise.all(
-        coursesArray.map(async (course) => {
-          try {
-            const progressData = await getProgress(userId, course.courseId);
-            return {
-              ...course,
-              progressPercentage: progressData?.progressPercentage || 0
-            };
-          } catch (e) {
-            return {
-              ...course,
-              progressPercentage: 0
-            };
-          }
-        })
-      );
-      
-      coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
-      setCoursesWithProgress(coursesWithProgressData);
+      await loadCoursesWithProgress(coursesArray);
     } catch (err) {
       console.error('Failed to withdraw from course', err);
       alert('Failed to withdraw from course.');

@@ -5,20 +5,26 @@ import HomeBanner from '../components/HomeBanner';
 import FiltersPanel from '../components/FiltersPanel';
 import CourseCard from '../components/CourseCard';
 
+/**
+ * Home - Main course search and discovery page
+ * Shows welcome banner by default, course results when searching/filtering
+ */
 export default function Home(){
+  // State management for search results and UI state
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const [hasSearchOrFilters, setHasSearchOrFilters] = useState(false);
   const [currentFilters, setCurrentFilters] = useState({});
 
+  // Load courses with optional filtering/search parameters
   const load = async (filterParams = {}) => {
     setLoading(true);
     try{
-      // Build combined params
+      // Build combined params from filters and URL search
       const params = { ...filterParams };
       
-      // Check for keyword in URL params
+      // Check for keyword in URL params (from Header search)
       const keyword = searchParams.get('keyword');
       if(keyword) {
         params.keyword = keyword;
@@ -30,7 +36,7 @@ export default function Home(){
       const data = await searchCourses(params);
       setCourses(Array.isArray(data) ? data : []);
       
-      // Check if any search or filters are applied
+      // Check if any search or filters are applied to toggle banner visibility
       setHasSearchOrFilters(Object.keys(params).length > 0);
     }catch(e){
       console.error('Search error:', e);
@@ -65,6 +71,7 @@ export default function Home(){
       background: '#f5f5f5',
       padding: '24px 32px'
     }}>
+      {/* Main grid layout: sidebar + content area */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '280px 1fr',

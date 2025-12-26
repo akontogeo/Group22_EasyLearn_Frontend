@@ -4,32 +4,68 @@ import { getProgress } from '../api/users';
 import { useNavigate, useParams } from 'react-router-dom';
 import './MyCourses.css';
 
+/**
+ * MyCourses Component
+ * 
+ * Displays a comprehensive dashboard for user's enrolled courses with progress tracking,
+ * course management features, and promotional content. This component provides a complete
+ * learning management interface for students to track and manage their educational journey.
+ * 
+ * Features:
+ * - Course enrollment display with real-time progress percentages
+ * - Course withdrawal functionality with user confirmation
+ * - Progress-based sorting (courses with highest progress shown first)
+ * - Show more/less functionality for large course lists (initially shows 3)
+ * - Premium upgrade promotional content and call-to-action
+ * - User points display and leaderboard integration
+ * - Responsive card-based layout with course thumbnails
+ * - Error handling and loading states
+ * 
+ * @returns {JSX.Element} The user's personalized courses dashboard page
+ */
 export default function MyCourses() {
+  // Extract userId from URL parameters for API calls
   const { userId } = useParams();
+  
+  // Navigation hook for programmatic routing to course details
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [coursesWithProgress, setCoursesWithProgress] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showAll, setShowAll] = useState(false);
+  
+  // State management for component data and UI state
+  const [user, setUser] = useState(null);                           // User profile information with points
+  const [coursesWithProgress, setCoursesWithProgress] = useState([]); // Enriched course data with progress
+  const [loading, setLoading] = useState(true);                     // Loading state for API operations
+  const [error, setError] = useState(null);                         // Error state for failed operations
+  const [showAll, setShowAll] = useState(false);                    // Toggle for course list expansion
 
+  /**
+   * Effect to load user data and enrolled courses when component mounts or userId changes
+   * Implements cleanup pattern to prevent memory leaks and race conditions
+   */
   useEffect(() => {
-    let mounted = true;
+    let mounted = true; // Flag to prevent state updates on unmounted component
 
+    /**
+     * Async function to load user profile and enrolled courses data
+     * Uses Promise.all for parallel API calls to improve performance
+     */
     async function loadData() {
       setLoading(true);
       setError(null);
       try {
+        // Fetch user profile and enrolled courses simultaneously
         const [userRes, coursesRes] = await Promise.all([
           getUserProfile(userId),
           getUserEnrolledCourses(userId),
         ]);
 
+        // Check if component is still mounted before updating state
         if (!mounted) return;
 
         setUser(userRes || null);
+        // Ensure courses data is always an array to prevent map errors
         const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
         
+        // Load progress data for all courses and update state
         await loadCoursesWithProgress(coursesArray);
         
       } catch (err) {
@@ -46,17 +82,29 @@ export default function MyCourses() {
     };
   }, [userId]);
 
-  // Helper function to load progress data and update state
+  /**
+   * Helper function to load progress data for an array of courses
+   * 
+   * Takes raw course data and enriches it with progress information from the API.
+   * Handles individual course progress fetch failures gracefully by defaulting to 0%.
+   * Sorts the final array by progress percentage in descending order for better UX.
+   * 
+   * @param {Array} coursesArray - Array of course objects to enrich with progress data
+   * @returns {Promise<void>} Updates component state with enriched course data
+   */
   async function loadCoursesWithProgress(coursesArray) {
+    // Map over all courses and fetch progress data in parallel for performance
     const coursesWithProgressData = await Promise.all(
       coursesArray.map(async (course) => {
         try {
+          // Fetch individual course progress from user API
           const progressData = await getProgress(userId, course.courseId);
           return {
             ...course,
             progressPercentage: progressData?.progressPercentage || 0
           };
         } catch (e) {
+          // Graceful fallback: assign 0% progress if API call fails
           return {
             ...course,
             progressPercentage: 0
@@ -65,22 +113,35 @@ export default function MyCourses() {
       })
     );
     
-    // Sort by progress descending
+    // Sort courses by progress percentage (highest first) for better user experience
     coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
     setCoursesWithProgress(coursesWithProgressData);
   }
 
+  /**
+   * Handler for premium registration/upgrade button
+   * Currently shows placeholder alert, will be implemented in future updates
+   */
   function handleRegisterClick() {
-    // stub for "Register" / Become premium
-    // Will call updateUser in a later change
+    // Placeholder for premium upgrade functionality
+    // TODO: Implement actual premium upgrade flow
     alert('Register / Become Premium clicked (not implemented).');
   }
 
+  /**
+   * Handler for leaderboard navigation button
+   * Currently shows placeholder alert, will be implemented in future updates
+   */
   function handleSeeLeaderboard() {
-    // stub for See Leaderboard
+    // Placeholder for leaderboard navigation
+    // TODO: Implement leaderboard page and navigation
     alert('See Leaderboard clicked (not implemented).');
   }
 
+  /**
+   * Toggles the display of all courses vs. limited view (first 3 courses)
+   * Improves UX by preventing overwhelming course lists
+   */
   function handleShowMore() {
     setShowAll(!showAll);
   }

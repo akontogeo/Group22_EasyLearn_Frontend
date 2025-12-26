@@ -2,12 +2,15 @@ import React, { useState, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Header - Main navigation bar with search, logo, and user navigation
+ */
 export default function Header() {
   const { user } = useAuth();
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const debounceTimer = useRef(null);
+  const debounceTimer = useRef(null); // Prevents excessive search API calls
 
   // Initialize search keyword from URL params
   React.useEffect(() => {
@@ -17,6 +20,7 @@ export default function Header() {
     }
   }, [searchParams]);
 
+  // Navigate to courses page with search term or clear filters
   const performSearch = (searchTerm) => {
     const trimmed = searchTerm.trim();
     if (trimmed) {
@@ -27,6 +31,7 @@ export default function Header() {
     }
   };
 
+  // Debounced search - waits 300ms after user stops typing
   const handleSearchChange = (e) => {
     const newValue = e.target.value;
     setSearchKeyword(newValue);
@@ -42,6 +47,7 @@ export default function Header() {
     }, 300);
   };
 
+  // Immediate search on form submit
   const handleSearch = (e) => {
     e.preventDefault();
     // Clear any pending debounce timer
@@ -51,6 +57,7 @@ export default function Header() {
     performSearch(searchKeyword);
   };
 
+  // Clear search and return to courses page
   const handleSearchClear = () => {
     setSearchKeyword('');
     if (debounceTimer.current) {

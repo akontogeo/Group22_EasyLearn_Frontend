@@ -4,15 +4,22 @@ import { getCourse, submitCourseReview } from '../api/courses';
 import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * CourseProgress - Main course learning interface with lessons, progress tracking, and rating
+ */
 export default function CourseProgress(){
   const { userId, courseId } = useParams();
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  
+  // Course and progress state
   const [course, setCourse] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
+  
+  // Rating dialog state
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingComment, setRatingComment] = useState('');
@@ -33,13 +40,13 @@ export default function CourseProgress(){
         const courseData = await getCourse(courseId);
         setCourse(courseData);
         
-        // Check if user is enrolled
+        // Check enrollment status
         const enrolledCourses = await getUserEnrolledCourses(userId);
         const enrolled = enrolledCourses.some(c => Number(c.id) === Number(courseId));
         
         setIsEnrolled(enrolled);
         
-        // Load progress if enrolled
+        // Load progress if user is enrolled
         if (enrolled) {
           try {
             const progressData = await getProgress(userId, courseId);
@@ -66,7 +73,7 @@ export default function CourseProgress(){
     return <div className="card">Course not found</div>;
   }
 
-  // Generate lessons from course quizList and quizzes data
+  // Generate lessons from course quiz data
   const lessons = course.quizList?.map((quizId, index) => ({
     id: quizId,
     number: index + 1,
@@ -77,13 +84,14 @@ export default function CourseProgress(){
 
   const progressPercentage = progress?.progressPercentage || 0;
 
+  // Handle course enrollment
   async function handleEnroll() {
     if (enrolling) return;
     try {
       setEnrolling(true);
       await enrollInCourse(userId, courseId);
       setIsEnrolled(true);
-      // Reload progress after enrollment
+      // Load initial progress after enrollment
       const progressData = await getProgress(userId, courseId);
       setProgress(progressData);
     } catch (e) {
@@ -93,6 +101,7 @@ export default function CourseProgress(){
     }
   }
 
+  // Handle course withdrawal with confirmation
   async function handleWithdraw() {
     if (!window.confirm(`Are you sure you want to withdraw from "${course.title}"? Your progress will be lost.`)) {
       return;
@@ -105,6 +114,7 @@ export default function CourseProgress(){
     }
   }
 
+  // Submit course rating and review
   async function handleSubmitRating() {
     if (selectedRating === 0) {
       alert('Please select a rating');

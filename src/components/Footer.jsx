@@ -1,11 +1,14 @@
 import React from 'react';
 
+/**
+ * Footer - Site footer with copyright, legal links, contact info, and social media
+ */
 export default function Footer() {
   return (
     <footer style={{
       background: 'var(--mint)',
       padding: '24px 32px',
-      marginTop: 'auto',
+      marginTop: 'auto', // Pushes footer to bottom of page
       borderTop: '1px solid rgba(0,0,0,0.05)'
     }}>
       <div style={{

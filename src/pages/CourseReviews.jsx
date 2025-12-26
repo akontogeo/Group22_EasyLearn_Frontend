@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getCourse, getCourseReviews } from '../api/courses';
 
+/**
+ * CourseReviews - Displays all reviews for a specific course
+ * Shows course info, average rating, and list of user reviews
+ */
 export default function CourseReviews() {
   const { courseId } = useParams();
   const [course, setCourse] = useState(null);
@@ -12,6 +16,7 @@ export default function CourseReviews() {
     async function load() {
       try {
         setLoading(true);
+        // Fetch course data and reviews in parallel
         const [courseData, reviewsData] = await Promise.all([
           getCourse(courseId),
           getCourseReviews(courseId)
@@ -35,6 +40,7 @@ export default function CourseReviews() {
     return <div className="card">Course not found</div>;
   }
 
+  // Calculate average rating from all reviews
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length).toFixed(1)
     : 'N/A';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getCourse, submitCourseReview, getCourseReviews } from '../api/courses';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getCourse, submitCourseReview } from '../api/courses';
 import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 

@@ -1,15 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
   const { user } = useAuth();
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const debounceTimer = useRef(null);
-  const isHomePage = location.pathname === '/' || location.pathname === '/courses';
 
   // Initialize search keyword from URL params
   React.useEffect(() => {

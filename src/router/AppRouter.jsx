@@ -1,6 +1,6 @@
 // Main router component - defines all application routes
 import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import CourseDetails from '../pages/CourseDetails';
 import MyCourses from '../pages/MyCourses';

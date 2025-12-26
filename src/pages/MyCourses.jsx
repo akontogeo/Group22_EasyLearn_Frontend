@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { getUserEnrolledCourses, getUserProfile, withdrawFromCourse } from '../api/users';
 import { getProgress } from '../api/users';
-import CourseCard from '../components/CourseCard';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import './MyCourses.css';
 
 export default function MyCourses() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [courses, setCourses] = useState([]);
   const [coursesWithProgress, setCoursesWithProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,29 +29,8 @@ export default function MyCourses() {
 
         setUser(userRes || null);
         const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
-        setCourses(coursesArray);
         
-        // Load progress for each course
-        const coursesWithProgressData = await Promise.all(
-          coursesArray.map(async (course) => {
-            try {
-              const progressData = await getProgress(userId, course.courseId);
-              return {
-                ...course,
-                progressPercentage: progressData?.progressPercentage || 0
-              };
-            } catch (e) {
-              return {
-                ...course,
-                progressPercentage: 0
-              };
-            }
-          })
-        );
-        
-        // Sort by progress descending
-        coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
-        setCoursesWithProgress(coursesWithProgressData);
+        await loadCoursesWithProgress(coursesArray);
         
       } catch (err) {
         console.error('Failed to load dashboard data', err);
@@ -68,6 +45,30 @@ export default function MyCourses() {
       mounted = false;
     };
   }, [userId]);
+
+  // Helper function to load progress data and update state
+  async function loadCoursesWithProgress(coursesArray) {
+    const coursesWithProgressData = await Promise.all(
+      coursesArray.map(async (course) => {
+        try {
+          const progressData = await getProgress(userId, course.courseId);
+          return {
+            ...course,
+            progressPercentage: progressData?.progressPercentage || 0
+          };
+        } catch (e) {
+          return {
+            ...course,
+            progressPercentage: 0
+          };
+        }
+      })
+    );
+    
+    // Sort by progress descending
+    coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
+    setCoursesWithProgress(coursesWithProgressData);
+  }
 
   function handleRegisterClick() {
     // stub for "Register" / Become premium
@@ -94,28 +95,8 @@ export default function MyCourses() {
       // Reload courses after withdrawal
       const coursesRes = await getUserEnrolledCourses(userId);
       const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
-      setCourses(coursesArray);
       
-      // Reload progress for remaining courses
-      const coursesWithProgressData = await Promise.all(
-        coursesArray.map(async (course) => {
-          try {
-            const progressData = await getProgress(userId, course.courseId);
-            return {
-              ...course,
-              progressPercentage: progressData?.progressPercentage || 0
-            };
-          } catch (e) {
-            return {
-              ...course,
-              progressPercentage: 0
-            };
-          }
-        })
-      );
-      
-      coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
-      setCoursesWithProgress(coursesWithProgressData);
+      await loadCoursesWithProgress(coursesArray);
     } catch (err) {
       console.error('Failed to withdraw from course', err);
       alert('Failed to withdraw from course.');

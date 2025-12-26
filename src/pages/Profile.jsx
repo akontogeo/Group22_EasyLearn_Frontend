@@ -3,20 +3,53 @@ import { getUserProfile, updateUser } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 import { Link, useParams } from 'react-router-dom';
 
+/**
+ * Profile Component
+ * 
+ * Displays and manages user profile information including account details,
+ * points, and premium status. Allows users to view their profile data
+ * and provides navigation to other parts of the application.
+ * 
+ * Features:
+ * - Loads user profile data from API based on URL parameter
+ * - Updates authentication context with current user data
+ * - Displays user information in a formatted layout
+ * - Provides navigation link to user's enrolled courses
+ * - Shows account information including email and premium status
+ * 
+ * @returns {JSX.Element} The user profile page
+ */
 export default function Profile(){
+  // Extract userId from URL parameters
   const { userId } = useParams();
+  // Access authentication context to update current user
   const { setUser } = useAuth();
+  // Local state for storing profile data
   const [profile, setProfile] = useState(null);
 
+  /**
+   * Effect to load user profile data when component mounts or userId changes
+   * Also updates the authentication context with the loaded user data
+   */
   useEffect(()=>{
+    // Early return if no userId is provided
     if(!userId) return;
+    
+    /**
+     * Async function to load user profile data from API
+     * Updates both local state and global auth context
+     */
     async function load(){
       try{
+        // Fetch user profile from API
         const p = await getUserProfile(userId);
         setProfile(p);
-        // Set this user as the logged-in user in context
+        // Set this user as the logged-in user in context for app-wide access
         setUser({ ...p, userId: Number(userId) });
-      }catch(e){console.error(e)}
+      }catch(e){
+        // Log any errors that occur during profile loading
+        console.error('Failed to load user profile:', e);
+      }
     }
     load();
   },[userId, setUser]);

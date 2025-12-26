@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CATEGORIES, DIFFICULTY_LEVELS } from '../utils/constants';
 
+/**
+ * FiltersPanel - Course filtering component with category, difficulty, and premium filters
+ */
 export default function FiltersPanel({ onApply }){
+  // Filter state - empty string means no filter selected
   const [filters, setFilters] = useState({
     category: '',
     difficulty: '',
@@ -10,18 +14,22 @@ export default function FiltersPanel({ onApply }){
   });
   const [searchParams] = useSearchParams();
 
+  // Toggle category filter - clicking same category clears it
   const handleCategoryChange = (cat) => {
     setFilters({ ...filters, category: filters.category === cat ? '' : cat });
   };
 
+  // Toggle difficulty filter - clicking same difficulty clears it
   const handleDifficultyChange = (diff) => {
     setFilters({ ...filters, difficulty: filters.difficulty === diff ? '' : diff });
   };
 
+  // Toggle premium filter - clicking same option clears it
   const handlePremiumChange = (val) => {
     setFilters({ ...filters, premium: filters.premium === val ? '' : val });
   };
 
+  // Apply current filters and preserve search keyword
   const handleApply = () => {
     const params = {};
     if(filters.category) params.category = filters.category;
@@ -40,6 +48,7 @@ export default function FiltersPanel({ onApply }){
     onApply(params);
   };
 
+  // Clear all filters but keep search keyword
   const handleClear = () => {
     const empty = { category: '', difficulty: '', premium: '' };
     setFilters(empty);

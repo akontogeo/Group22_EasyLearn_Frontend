@@ -1,6 +1,23 @@
 import React from 'react';
 
+/**
+ * HomeBanner Component
+ * 
+ * Displays the main banner section on the homepage with animated word cloud background
+ * and inspirational messaging to encourage learning. Features a visual word cloud
+ * of various course topics and a call-to-action message.
+ * 
+ * Features:
+ * - Animated floating word cloud background with course topics
+ * - Responsive design that adapts to different screen sizes
+ * - Centered content layout with overlay text
+ * - Subtle box shadow and border radius for modern appearance
+ * 
+ * @returns {JSX.Element} The home banner section
+ */
 export default function HomeBanner(){
+  // Array of course topics displayed in the background word cloud
+  // Topics are repeated to create a fuller visual effect
   const words = [
     'Programming', 'Digital Marketing', 'Data Science', 'Machine Learning',
     'Project Management', 'Economics and Finance', 'Programming', 

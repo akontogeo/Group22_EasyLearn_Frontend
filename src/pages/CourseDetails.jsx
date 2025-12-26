@@ -4,12 +4,17 @@ import { getCourse, getCourseReviews } from '../api/courses';
 import { getUserEnrolledCourses, enrollInCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * CourseDetails - Shows course information with enrollment option
+ * Handles both /courses/:id and /users/:userId/courses/:courseId routes
+ */
 export default function CourseDetails(){
   const { id, courseId, userId } = useParams();
   const navigate = useNavigate();
-  // Use courseId if available (from /users/:userId/courses/:courseId), otherwise use id (from /courses/:id)
+  // Handle different route patterns - use courseId from nested route or id from simple route
   const actualCourseId = courseId || id;
   const { user } = useAuth();
+  
   const [course, setCourse] = useState(null);
   const [avgRating, setAvgRating] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,10 +25,11 @@ export default function CourseDetails(){
     async function load(){
       try{
         setLoading(true);
+        // Load course data
         const c = await getCourse(actualCourseId);
         setCourse(c);
         
-        // Fetch reviews and calculate average
+        // Calculate average rating from reviews
         const r = await getCourseReviews(actualCourseId);
         if(r && r.length > 0){
           const avg = (r.reduce((sum, rating) => sum + rating.stars, 0) / r.length).toFixed(1);
@@ -32,15 +38,14 @@ export default function CourseDetails(){
           setAvgRating('N/A');
         }
 
-        // Check if user is enrolled (only when accessed via /courses/:id route)
-        // If userId is in params, we shouldn't be here - let the router handle it
+        // Check enrollment status and redirect if already enrolled
         if(!userId){
           const currentUserId = user?.userId;
           if(currentUserId){
             const enrolledCourses = await getUserEnrolledCourses(currentUserId);
             const enrolled = enrolledCourses.some(ec => Number(ec.id) === Number(actualCourseId));
             
-            // If user is enrolled, redirect to the enrolled course view
+            // Redirect enrolled users to progress page
             if(enrolled){
               navigate(`/users/${currentUserId}/courses/${actualCourseId}`);
               return;
@@ -57,6 +62,7 @@ export default function CourseDetails(){
     load();
   },[actualCourseId, userId, user]);
 
+  // Handle course enrollment and redirect to progress page
   const handleEnroll = async () => {
     const currentUserId = userId || user?.userId;
     if(!currentUserId){
@@ -67,6 +73,7 @@ export default function CourseDetails(){
     try{
       setEnrolling(true);
       await enrollInCourse(currentUserId, actualCourseId);
+      // Navigate to course progress after successful enrollment
       navigate(`/users/${currentUserId}/courses/${actualCourseId}`);
     }catch(e){
       alert('Failed to enroll: ' + (e.response?.data?.message || e.message));

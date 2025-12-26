@@ -82,113 +82,56 @@ export default function MyCourses() {
     };
   }, [userId]);
 
-  /**
-   * Helper function to load progress data for an array of courses
-   * 
-   * Takes raw course data and enriches it with progress information from the API.
-   * Handles individual course progress fetch failures gracefully by defaulting to 0%.
-   * Sorts the final array by progress percentage in descending order for better UX.
-   * 
-   * @param {Array} coursesArray - Array of course objects to enrich with progress data
-   * @returns {Promise<void>} Updates component state with enriched course data
-   */
+  // Load courses with progress data
   async function loadCoursesWithProgress(coursesArray) {
-    // Map over all courses and fetch progress data in parallel for performance
     const coursesWithProgressData = await Promise.all(
       coursesArray.map(async (course) => {
         try {
-          // Fetch individual course progress from user API
           const progressData = await getProgress(userId, course.courseId);
-          return {
-            ...course,
-            progressPercentage: progressData?.progressPercentage || 0
-          };
+          return { ...course, progressPercentage: progressData?.progressPercentage || 0 };
         } catch (e) {
-          // Graceful fallback: assign 0% progress if API call fails
-          return {
-            ...course,
-            progressPercentage: 0
-          };
+          return { ...course, progressPercentage: 0 };
         }
       })
     );
-    
-    // Sort courses by progress percentage (highest first) for better user experience
     coursesWithProgressData.sort((a, b) => b.progressPercentage - a.progressPercentage);
     setCoursesWithProgress(coursesWithProgressData);
   }
 
-  /**
-   * Handler for premium registration/upgrade button
-   * Currently shows placeholder alert, will be implemented in future updates
-   */
-  function handleRegisterClick() {
-    // Placeholder for premium upgrade functionality
-    // TODO: Implement actual premium upgrade flow
-    alert('Register / Become Premium clicked (not implemented).');
-  }
+  // Simple handlers
+  const handleRegisterClick = () => alert('Register / Become Premium clicked (not implemented).');
+  const handleSeeLeaderboard = () => alert('See Leaderboard clicked (not implemented).');
+  const handleShowMore = () => setShowAll(!showAll);
+  const handleOpenCourse = (courseId) => navigate(`/users/${userId}/courses/${courseId}`);
 
-  /**
-   * Handler for leaderboard navigation button
-   * Currently shows placeholder alert, will be implemented in future updates
-   */
-  function handleSeeLeaderboard() {
-    // Placeholder for leaderboard navigation
-    // TODO: Implement leaderboard page and navigation
-    alert('See Leaderboard clicked (not implemented).');
-  }
-
-  /**
-   * Toggles the display of all courses vs. limited view (first 3 courses)
-   * Improves UX by preventing overwhelming course lists
-   */
-  function handleShowMore() {
-    setShowAll(!showAll);
-  }
-
+  // Handle course withdrawal
   async function handleWithdraw(courseId, courseTitle) {
-    if (!window.confirm(`Are you sure you want to withdraw from "${courseTitle}"? Your progress will be lost.`)) {
-      return;
-    }
+    if (!window.confirm(`Are you sure you want to withdraw from "${courseTitle}"? Your progress will be lost.`)) return;
     
     try {
       await withdrawFromCourse(userId, courseId);
-      // Reload courses after withdrawal
       const coursesRes = await getUserEnrolledCourses(userId);
-      const coursesArray = Array.isArray(coursesRes) ? coursesRes : [];
-      
-      await loadCoursesWithProgress(coursesArray);
+      await loadCoursesWithProgress(Array.isArray(coursesRes) ? coursesRes : []);
     } catch (err) {
       console.error('Failed to withdraw from course', err);
       alert('Failed to withdraw from course.');
     }
   }
 
-  function handleOpenCourse(courseId) {
-    navigate(`/users/${userId}/courses/${courseId}`);
-  }
+  // Early returns for loading and error states
+  if (loading) return (
+    <div className="mycourses-page"><div className="container">
+      <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
+      <div className="loading">Loading...</div>
+    </div></div>
+  );
 
-  if (loading) {
-    return (
-      <div className="mycourses-page">
-        <div className="container">
-          <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
-          <div className="loading">Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="mycourses-page">
-        <div className="container">
-          <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
-          <div className="error">{error}</div>
-        </div>
-      </div>
-    );
-  }
+  if (error) return (
+    <div className="mycourses-page"><div className="container">
+      <h1 className="page-title" data-cy="dashboard-header">MY COURSES</h1>
+      <div className="error">{error}</div>
+    </div></div>
+  );
 
   // Determine which courses to display
   const displayedCourses = showAll ? coursesWithProgress : coursesWithProgress.slice(0, 3);
@@ -212,7 +155,6 @@ export default function MyCourses() {
                   <div key={id} className="course-card" data-cy="my-course-card">
                     <div className="course-left">
                       <div className="thumb-placeholder">
-                        {/* simple placeholder icon from first letters */}
                         {c.title ? c.title.split(' ').slice(0, 2).map(w => w[0]).join('') : 'C'}
                       </div>
                       <div className="course-info">
@@ -225,22 +167,9 @@ export default function MyCourses() {
                         </div>
                       </div>
                     </div>
-
                     <div className="course-actions">
-                      <button
-                        className="icon-btn delete"
-                        title="Withdraw"
-                        onClick={() => handleWithdraw(id, c.title)}
-                      >
-                        🗑️
-                      </button>
-                      <button
-                        className="icon-btn arrow"
-                        title="Open course"
-                        onClick={() => handleOpenCourse(id)}
-                      >
-                        ➜
-                      </button>
+                      <button className="icon-btn delete" title="Withdraw" onClick={() => handleWithdraw(id, c.title)}>🗑️</button>
+                      <button className="icon-btn arrow" title="Open course" onClick={() => handleOpenCourse(id)}>➜</button>
                     </div>
                   </div>
                 );
@@ -259,15 +188,11 @@ export default function MyCourses() {
           <div className="right-column">
             <div className="card premium-card">
               <div className="premium-text">
-                <p className="big">
-                  Do you want access to ...exclusive lessons ?
-                </p>
+                <p className="big">Do you want access to ...exclusive lessons ?</p>
                 <p>Become TODAY a premium user !</p>
               </div>
               <div className="card-actions">
-                <button className="btn-green" onClick={handleRegisterClick}>
-                  Register
-                </button>
+                <button className="btn-green" onClick={handleRegisterClick}>Register</button>
               </div>
             </div>
 
@@ -277,9 +202,7 @@ export default function MyCourses() {
                 <p className="points-sub">Excellent keep going !</p>
               </div>
               <div className="card-actions">
-                <button className="btn-green" onClick={handleSeeLeaderboard}>
-                  See Leaderboard
-                </button>
+                <button className="btn-green" onClick={handleSeeLeaderboard}>See Leaderboard</button>
               </div>
             </div>
           </div>

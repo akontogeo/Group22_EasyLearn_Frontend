@@ -31,6 +31,10 @@ jobs:
         env:
           # Χρησιμοποιούμε το σωστό όνομα μεταβλητής από το .env
           REACT_APP_API_BASE: ${{ secrets.BACKEND_RENDER_URL }} 
+          
+      - name: Warm up Backend
+        # Κάνει μια κλήση στο Backend URL για να το "ξυπνήσει" νωρίς
+        run: curl -s ${{ secrets.BACKEND_RENDER_URL }}/health || true
 
       # 1. RUN E2E ACCEPTANCE TESTS (Task C6)
       # Tests run on production build with deployed Render backend

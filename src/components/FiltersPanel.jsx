@@ -6,6 +6,12 @@ import { CATEGORIES, DIFFICULTY_LEVELS } from '../utils/constants';
  * FiltersPanel - Course filtering component with category, difficulty, and premium filters
  */
 export default function FiltersPanel({ onApply }){
+  // Shared styles
+  const sectionStyle = { marginBottom: '28px' };
+  const headerStyle = { fontSize: '14px', fontWeight: 600, color: '#333', marginBottom: '12px' };
+  const labelStyle = { display: 'flex', alignItems: 'center', marginBottom: '10px', cursor: 'pointer', fontSize: '14px', color: '#555' };
+  const radioStyle = { marginRight: '10px', cursor: 'pointer', accentColor: '#2ea67a' };
+
   // Filter state - empty string means no filter selected
   const [filters, setFilters] = useState({
     category: '',
@@ -81,125 +87,40 @@ export default function FiltersPanel({ onApply }){
       </h3>
 
       {/* Category Section */}
-      <div style={{ marginBottom: '28px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#333',
-          marginBottom: '12px'
-        }}>
-          Category
-        </h4>
+      <div style={sectionStyle}>
+        <h4 style={headerStyle}>Category</h4>
         {CATEGORIES.map(cat => (
-          <label key={cat} style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '10px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            color: '#555'
-          }}>
-            <input
-              type="radio"
-              name="category"
-              checked={filters.category === cat}
-              onChange={() => handleCategoryChange(cat)}
-              style={{
-                marginRight: '10px',
-                cursor: 'pointer',
-                accentColor: '#2ea67a'
-              }}
-            />
+          <label key={cat} style={labelStyle}>
+            <input type="radio" name="category" checked={filters.category === cat}
+              onChange={() => handleCategoryChange(cat)} style={radioStyle} />
             {cat}
           </label>
         ))}
       </div>
 
       {/* Difficulty Section */}
-      <div style={{ marginBottom: '28px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#333',
-          marginBottom: '12px'
-        }}>
-          Difficulty
-        </h4>
+      <div style={sectionStyle}>
+        <h4 style={headerStyle}>Difficulty</h4>
         {DIFFICULTY_LEVELS.map(diff => (
-          <label key={diff} style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '10px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            color: '#555'
-          }}>
-            <input
-              type="radio"
-              name="difficulty"
-              checked={filters.difficulty === diff}
-              onChange={() => handleDifficultyChange(diff)}
-              style={{
-                marginRight: '10px',
-                cursor: 'pointer',
-                accentColor: '#2ea67a'
-              }}
-            />
+          <label key={diff} style={labelStyle}>
+            <input type="radio" name="difficulty" checked={filters.difficulty === diff}
+              onChange={() => handleDifficultyChange(diff)} style={radioStyle} />
             {diff.charAt(0).toUpperCase() + diff.slice(1)}
           </label>
         ))}
       </div>
 
       {/* Premium Section */}
-      <div style={{ marginBottom: '28px' }}>
-        <h4 style={{
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#333',
-          marginBottom: '12px'
-        }}>
-          Premium
-        </h4>
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '10px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          color: '#555'
-        }}>
-          <input
-            type="radio"
-            name="premium"
-            checked={filters.premium === 'yes'}
-            onChange={() => handlePremiumChange('yes')}
-            style={{
-              marginRight: '10px',
-              cursor: 'pointer',
-              accentColor: '#2ea67a'
-            }}
-          />
+      <div style={sectionStyle}>
+        <h4 style={headerStyle}>Premium</h4>
+        <label style={labelStyle}>
+          <input type="radio" name="premium" checked={filters.premium === 'yes'}
+            onChange={() => handlePremiumChange('yes')} style={radioStyle} />
           Yes
         </label>
-        <label style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '10px',
-          cursor: 'pointer',
-          fontSize: '14px',
-          color: '#555'
-        }}>
-          <input
-            type="radio"
-            name="premium"
-            checked={filters.premium === 'no'}
-            onChange={() => handlePremiumChange('no')}
-            style={{
-              marginRight: '10px',
-              cursor: 'pointer',
-              accentColor: '#2ea67a'
-            }}
-          />
+        <label style={labelStyle}>
+          <input type="radio" name="premium" checked={filters.premium === 'no'}
+            onChange={() => handlePremiumChange('no')} style={radioStyle} />
           No
         </label>
       </div>

@@ -1,458 +1,144 @@
-import React, { useEffect, useState } from 'react';
+// Core React imports
+import React from 'react';
+// Router hooks for navigation and URL parameters
 import { useParams, useNavigate } from 'react-router-dom';
-import { getCourse, submitCourseReview } from '../api/courses';
-import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
-import { useAuth } from '../context/AuthContext';
+// Component imports for UI elements
+import RatingDialog from '../components/RatingDialog';
+import LessonsList from '../components/LessonsList';
+import CourseActions from '../components/CourseActions';
+// Custom hooks for data and state management
+import { useCourseProgress, useCourseRating } from '../hooks';
+// Component-specific styling
+import './CourseProgress.css';
 
 /**
  * CourseProgress - Main course learning interface with lessons, progress tracking, and rating
+ * Provides complete course learning experience with enrollment, progress tracking, and rating
+ * Handles both enrolled and non-enrolled user states
  */
 export default function CourseProgress(){
+  // Extract URL parameters for user and course identification
   const { userId, courseId } = useParams();
+  // Navigation hook for programmatic routing
   const navigate = useNavigate();
-  const { setUser } = useAuth();
   
-  // Course and progress state
-  const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  const [enrolling, setEnrolling] = useState(false);
-  
-  // Rating dialog state
-  const [showRatingDialog, setShowRatingDialog] = useState(false);
-  const [selectedRating, setSelectedRating] = useState(0);
-  const [ratingComment, setRatingComment] = useState('');
-  const [submittingRating, setSubmittingRating] = useState(false);
-  const [reviewSuccess, setReviewSuccess] = useState(false);
+  // Custom hook for course data management and enrollment operations
+  const {
+    course, // Course details object
+    progress, // User's progress data
+    loading, // Loading state for initial data fetch
+    isEnrolled, // Boolean indicating enrollment status
+    enrolling, // Boolean indicating enrollment process
+    handleEnroll, // Function to enroll in course
+    handleWithdraw // Function to withdraw from course
+  } = useCourseProgress(userId, courseId, navigate);
 
-  useEffect(() => {
-    async function load(){
-      try{
-        setLoading(true);
-        
-        // Set current user from URL
-        const { getUserProfile } = await import('../api/users');
-        const profile = await getUserProfile(userId);
-        setUser({ ...profile, userId: Number(userId) });
-        
-        // Load course details
-        const courseData = await getCourse(courseId);
-        setCourse(courseData);
-        
-        // Check enrollment status
-        const enrolledCourses = await getUserEnrolledCourses(userId);
-        const enrolled = enrolledCourses.some(c => Number(c.id) === Number(courseId));
-        
-        setIsEnrolled(enrolled);
-        
-        // Load progress if user is enrolled
-        if (enrolled) {
-          try {
-            const progressData = await getProgress(userId, courseId);
-            setProgress(progressData);
-          } catch (e) {
-            console.log('No progress data yet, setting default');
-            setProgress({ progressPercentage: 0 });
-          }
-        }
-      }catch(e){
-        console.error('Failed to load course progress:', e);
-      }finally{
-        setLoading(false);
-      }
-    }
-    load();
-  }, [userId, courseId, setUser]);
+  // Custom hook for rating and review functionality
+  const {
+    showRatingDialog, // Boolean to show/hide rating modal
+    setShowRatingDialog, // Function to control rating dialog visibility
+    selectedRating, // Currently selected star rating (1-5)
+    setSelectedRating, // Function to update selected rating
+    ratingComment, // Text comment for the review
+    setRatingComment, // Function to update comment text
+    submittingRating, // Boolean indicating rating submission in progress
+    reviewSuccess, // Boolean indicating successful review submission
+    handleSubmitRating, // Function to submit rating and review
+    handleCancelRating // Function to cancel rating process
+  } = useCourseRating(courseId, userId);
 
-  if(loading){
-    return <div className="card">Loading...</div>;
-  }
+  // Early returns for loading and error states
+  if(loading) return <div className="loading-card">Loading...</div>;
+  if(!course) return <div className="error-card">Course not found</div>;
 
-  if(!course){
-    return <div className="card">Course not found</div>;
-  }
-
-  // Generate lessons from course quiz data
-  const lessons = course.quizList?.map((quizId, index) => ({
-    id: quizId,
-    number: index + 1,
-    title: `Lesson ${index + 1}`,
-    hasQuiz: true,
-    quizId: quizId
-  })) || [];
-
+  // Generate lessons and calculate progress
+  // Transform quiz IDs into lesson objects with metadata
+  const lessons = course.quizList?.map((quizId, index) => ({ 
+    id: quizId, // Unique quiz identifier
+    number: index + 1, // Sequential lesson number
+    title: `Lesson ${index + 1}`, // Display title
+    hasQuiz: true, // Indicates quiz availability
+    quizId // Reference to quiz
+  })) || []; // Fallback to empty array if no quizzes
+  // Extract progress percentage, default to 0 if no progress data
   const progressPercentage = progress?.progressPercentage || 0;
 
-  // Handle course enrollment
-  async function handleEnroll() {
-    if (enrolling) return;
-    try {
-      setEnrolling(true);
-      await enrollInCourse(userId, courseId);
-      setIsEnrolled(true);
-      // Load initial progress after enrollment
-      const progressData = await getProgress(userId, courseId);
-      setProgress(progressData);
-    } catch (e) {
-      console.error('Failed to enroll:', e);
-    } finally {
-      setEnrolling(false);
-    }
-  }
-
-  // Handle course withdrawal with confirmation
-  async function handleWithdraw() {
-    if (!window.confirm(`Are you sure you want to withdraw from "${course.title}"? Your progress will be lost.`)) {
-      return;
-    }
-    try {
-      await withdrawFromCourse(userId, courseId);
-      navigate(`/courses/${courseId}`);
-    } catch (e) {
-      console.error('Failed to withdraw:', e);
-    }
-  }
-
-  // Submit course rating and review
-  async function handleSubmitRating() {
-    if (selectedRating === 0) {
-      alert('Please select a rating');
-      return;
-    }
-    
-    setSubmittingRating(true);
-    
-    try {
-      await submitCourseReview(courseId, {
-        userId: Number(userId),
-        stars: selectedRating,
-        comment: ratingComment
-      });
-      
-      console.log('Review submitted successfully');
-      
-      // Show success message
-      setReviewSuccess(true);
-      setTimeout(() => setReviewSuccess(false), 3000);
-      
-      // Close dialog and reset form
-      setShowRatingDialog(false);
-      setSelectedRating(0);
-      setRatingComment('');
-      setSubmittingRating(false);
-    } catch (e) {
-      console.error('Failed to submit rating:', e);
-      alert('Failed to submit review. Please try again.');
-      setSubmittingRating(false);
-    }
-  }
-
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 100px)',
-      background: '#f5f5f5',
-      padding: '24px 32px'
-    }}>
-      {/* Rating Dialog */}
-      {showRatingDialog && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '32px',
-            maxWidth: '500px',
-            width: '90%',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-          }}>
-            <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px' }}>Rate this Course</h2>
-            
-            {/* Star Rating */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Your Rating:</div>
-              <div data-cy="review-stars" style={{ display: 'flex', gap: '8px' }}>
-                {[1, 2, 3, 4, 5].map(star => (
-                  <button
-                    key={star}
-                    onClick={() => setSelectedRating(star)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '36px',
-                      cursor: 'pointer',
-                      color: star <= selectedRating ? '#ffc107' : '#ddd',
-                      padding: 0
-                    }}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-            </div>
+    // Main page container with background styling
+    <div className="course-progress">
+      {/* Rating Dialog Modal - conditionally rendered */}
+      <RatingDialog
+        show={showRatingDialog}
+        selectedRating={selectedRating}
+        setSelectedRating={setSelectedRating}
+        ratingComment={ratingComment}
+        setRatingComment={setRatingComment}
+        submittingRating={submittingRating}
+        onSubmit={handleSubmitRating}
+        onCancel={handleCancelRating}
+      />
 
-            {/* Comment */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ fontSize: '14px', marginBottom: '8px', color: '#666' }}>Comment (optional):</div>
-              <textarea
-                data-cy="review-input"
-                value={ratingComment}
-                onChange={(e) => setRatingComment(e.target.value)}
-                placeholder="Share your thoughts about this course..."
-                style={{
-                  width: '100%',
-                  minHeight: '100px',
-                  padding: '12px',
-                  borderRadius: '6px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
-
-            {/* Buttons */}
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => {
-                  setShowRatingDialog(false);
-                  setSelectedRating(0);
-                  setRatingComment('');
-                }}
-                disabled={submittingRating}
-                style={{
-                  background: '#f0f0f0',
-                  color: '#333',
-                  border: 'none',
-                  padding: '10px 24px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: submittingRating ? 'not-allowed' : 'pointer'
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                data-cy="review-submit-button"
-                onClick={handleSubmitRating}
-                disabled={submittingRating || selectedRating === 0}
-                style={{
-                  background: (submittingRating || selectedRating === 0) ? '#ccc' : '#2ea67a',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 24px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: (submittingRating || selectedRating === 0) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {submittingRating ? 'Submitting...' : 'Submit Rating'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* Course Header */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '32px',
-          marginBottom: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '24px',
-            marginBottom: '24px'
-          }}>
-            {/* Course Image */}
-            <div style={{
-              width: 200,
-              height: 200,
-              background: '#f0f0f0',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              overflow: 'hidden',
-              border: '2px solid #e0e0e0'
-            }}>
+      <div className="course-progress-container">
+        <div className="course-progress-card">
+          {/* Course Header - image and title section */}
+          <div className="course-header">
+            {/* Course image container with fallback support */}
+            <div className="course-image">
+              {/* Display actual course image if available */}
               {course.courseImage ? (
-                <img src={course.courseImage} alt={course.title} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                <img src={course.courseImage} alt={course.title} />
               ) : (
-                <div style={{fontSize: 72, fontWeight: 'bold', color: '#999'}}>
+                /* Fallback placeholder showing course initials */
+                <div className="course-image-placeholder">
+                  {/* Extract first 2 characters as placeholder */}
                   {course.title?.slice(0,2).toUpperCase()}
                 </div>
               )}
             </div>
 
-            {/* Course Info */}
-            <div style={{ flex: 1 }}>
-              <h1 style={{
-                margin: '0 0 16px 0',
-                fontSize: '32px',
-                fontWeight: 600,
-                color: '#222'
-              }}>
-                {course.title} <span style={{ color: '#999', fontSize: '24px' }}>Part I</span>
+            {/* Course information section */}
+            <div className="course-info">
+              {/* Main course title with subtitle */}
+              <h1 className="course-title">
+                {/* Course name with "Part I" indicator */}
+                {course.title} <span className="course-title-subtitle">Part I</span>
               </h1>
             </div>
           </div>
 
-          {/* Lessons List - Only show if enrolled */}
-          {isEnrolled && (
-          <div style={{ marginBottom: '24px' }}>
-            {lessons.length === 0 && (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
-                No lessons available for this course yet.
-              </div>
-            )}
-            {lessons.map((lesson) => (
-              <div key={lesson.id} style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '16px',
-                marginBottom: '12px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '8px',
-                background: 'white'
-              }}>
-                <span style={{ fontSize: '16px', color: '#333' }}>
-                  <strong>Lesson {lesson.number}-</strong> {course.title} - Part {lesson.number}
-                </span>
-                {lesson.hasQuiz && (
-                  <button style={{
-                    background: '#2ea67a',
-                    color: 'white',
-                    border: 'none',
-                    padding: '8px 24px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}>
-                    Quiz
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-          )}
+          {/* Lessons List Component - displays all course lessons */}
+          <LessonsList lessons={lessons} course={course} isEnrolled={isEnrolled} />
 
-          {/* Action Buttons Row */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '24px'
-          }}>
-            {/* Left side: Enroll or Download Material */}
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              {!isEnrolled ? (
-                <button
-                  onClick={handleEnroll}
-                  disabled={enrolling}
-                  style={{
-                    background: enrolling ? '#ccc' : '#2ea67a',
-                    color: 'white',
-                    border: 'none',
-                    padding: '12px 32px',
-                    borderRadius: '6px',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    cursor: enrolling ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {enrolling ? 'Enrolling...' : 'Enroll in Course'}
-                </button>
-              ) : (
-                <>
-                  <button style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#2ea67a',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    padding: '8px'
-                  }}>
-                    <span style={{ fontSize: '24px' }}>⬇</span>
-                    Download material
-                  </button>
-                  <button
-                    onClick={handleWithdraw}
-                    style={{
-                      background: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      padding: '12px 24px',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Withdraw
-                  </button>
-                </>
-              )}
-            </div>
+          {/* Action buttons row - enrollment controls and progress display */}
+          <div className="action-buttons-row">
+            {/* Course action buttons (enroll/withdraw/download) */}
+            <CourseActions
+              isEnrolled={isEnrolled}
+              enrolling={enrolling}
+              onEnroll={handleEnroll}
+              onWithdraw={handleWithdraw}
+            />
 
-            {/* Right side: Progress Bar */}
+            {/* Right side: Progress Bar for enrolled users */}
             {isEnrolled && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px'
-              }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div data-cy="progress-indicator" style={{ fontSize: '14px', color: '#666', marginBottom: '4px' }}>
+              <div className="progress-section">
+                {/* Progress information wrapper */}
+                <div className="progress-info">
+                  {/* Progress label with percentage text */}
+                  <div className="progress-label" data-cy="progress-indicator">
+                    {/* Display current progress percentage */}
                     My Progress: {progressPercentage}% completed
                   </div>
-                  <div style={{
-                    width: '200px',
-                    height: '24px',
-                    background: '#e0e0e0',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}>
-                    <div style={{
-                      width: `${progressPercentage}%`,
-                      height: '100%',
-                      background: 'linear-gradient(90deg, #2ea67a 0%, #1e7a56 100%)',
-                      transition: 'width 0.3s'
-                    }}></div>
-                    <span style={{
-                      position: 'absolute',
-                      right: '8px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: progressPercentage > 50 ? 'white' : '#333'
-                    }}>
+                  {/* Visual progress bar container */}
+                  <div className="progress-bar">
+                    {/* Filled portion of progress bar */}
+                    <div 
+                      className="progress-fill" 
+                      style={{ width: `${progressPercentage}%` }}
+                    />
+                    {/* Percentage text overlay with adaptive styling */}
+                    <span className={`progress-text ${progressPercentage > 50 ? 'light' : 'dark'}`}>
+                      {/* Show percentage number */}
                       {progressPercentage}%
                     </span>
                   </div>
@@ -461,80 +147,42 @@ export default function CourseProgress(){
             )}
           </div>
 
-          {/* Bottom Action Buttons - Only show if enrolled */}
+          {/* Bottom action section - only visible for enrolled users */}
           {isEnrolled && (
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            paddingTop: '24px',
-            borderTop: '1px solid #e0e0e0'
-          }}>
-            <button
-              data-cy="rate-button"
-              onClick={() => setShowRatingDialog(true)}
-              style={{
-                background: '#2ea67a',
-                color: 'white',
-                border: 'none',
-                padding: '12px 32px',
-                borderRadius: '6px',
-                fontSize: '15px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <span>⭐</span>
-              Rate
-            </button>
-
-            <div style={{
-              flex: 1,
-              background: '#f0f0f0',
-              borderRadius: '6px',
-              padding: '12px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <span style={{ fontSize: '14px', color: '#666' }}>
-                You got stucked?<br/>
-                Don't worry! Chat with others!
-              </span>
-              <button style={{
-                background: '#2ea67a',
-                color: 'white',
-                border: 'none',
-                padding: '10px 24px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}>
-                FORUM
+            <div className="bottom-actions">
+              {/* Rate course button with star icon */}
+              <button
+                data-cy="rate-button"
+                onClick={() => setShowRatingDialog(true)}
+                className="rate-button"
+              >
+                <span>⭐</span>
+                Rate
               </button>
+
+              {/* Forum section for community interaction */}
+              <div className="forum-section">
+                {/* Help text for stuck users */}
+                <span className="forum-text">
+                  You got stucked?<br/>
+                  Don't worry! Chat with others!
+                </span>
+                {/* Forum access button */}
+                <button className="forum-button">
+                  FORUM
+                </button>
+              </div>
             </div>
-          </div>
           )}
 
-          {/* Review Success Message */}
+          {/* Success message display after review submission */}
           {reviewSuccess && (
-            <div data-cy="review-success" style={{ 
-              marginTop: 16, 
-              padding: 12, 
-              background: '#d4edda', 
-              color: '#155724', 
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: 500
-            }}>
+            <div data-cy="review-success" className="success-message">
               Review submitted successfully!
             </div>
           )}
 
-          {/* Review List - placeholder για testing */}
+          {/* Review List - placeholder for testing */}
           <div data-cy="review-list" style={{ marginTop: 16, display: 'none' }}>
             {/* Reviews would be listed here */}
           </div>

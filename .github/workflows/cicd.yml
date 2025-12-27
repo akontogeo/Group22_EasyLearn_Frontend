@@ -41,7 +41,7 @@ jobs:
           start: npx serve -s build -l 3000
           # Wait for the app to be ready
           wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
+          wait-on-timeout: 180
           # Run in headless Electron
           browser: electron
 

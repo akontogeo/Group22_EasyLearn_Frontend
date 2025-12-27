@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react'; // React hooks for component
 import { useParams, Link } from 'react-router-dom'; // Router hooks for URL parameters and navigation
 import { getCourse, getCourseReviews } from '../api/courses'; // API functions for course and review data fetching
 /**
- * CourseReviews 
- * Shows course info, average rating
+ * CourseReviews. Shows course info, average rating
  */
 export default function CourseReviews() {
   const { courseId } = useParams(); // Extract course ID from URL parameters
@@ -12,11 +11,9 @@ export default function CourseReviews() {
   const [loading, setLoading] = useState(true);   // Loading state for API calls
   // Effect hook to load course and review data on component mount
   useEffect(() => {
-    // Async function to handle data loading
-    async function load() {
+    async function load() { // Async function to handle data loading
       try {
-        // Set loading state to show spinner
-        setLoading(true);
+        setLoading(true); // Set loading state to show spinner
         // Fetch course data and reviews in parallel for better performance
         const [courseData, reviewsData] = await Promise.all([
           getCourse(courseId), // Get course details
@@ -26,75 +23,43 @@ export default function CourseReviews() {
         setCourse(courseData);
         setReviews(reviewsData);
       } catch (e) {
-        // Log any errors during data fetching
-        console.error('Failed to load reviews:', e);
+        console.error('Failed to load reviews:', e);  // Log any errors during data fetching
       } finally {
-        // Always stop loading indicator
-        setLoading(false);
+        setLoading(false); // Always stop loading indicator
       }
     }
-    // Execute the load function
-    load();
+    load();// Execute the load function
   }, [courseId]); // Re-run effect if courseId changes
-
-  // Show loading indicator while data is being fetched
-  if (loading) {
+  if (loading) { // Show loading indicator while data is being fetched
     return <div className="card">Loading...</div>;
   }
-
   // Show error message if course data couldn't be loaded
   if (!course) {
     return <div className="card">Course not found</div>;
   }
 
-  // Calculate average rating from all reviews
-  // Use reduce to sum all star ratings, then divide by count
+  // Calculate average rating from all reviews,Use reduce to sum all star ratings, then divide by count
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.stars, 0) / reviews.length).toFixed(1)
     : 'N/A'; // Show N/A if no reviews exist
 
   return (
     // Main page container with full height and background styling
-    <div style={{
-      minHeight: 'calc(100vh - 100px)', // Full viewport height minus header
-      background: '#f5f5f5', // Light gray background
-      padding: '24px 32px' // Page padding
-    }}>
+    <div style={{ minHeight: 'calc(100vh - 100px)', background: '#f5f5f5', padding: '24px 32px' }}>
       {/* Centered content container with max width */}
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         {/* Navigation link back to course details */}
-        <Link to={`/courses/${courseId}`} style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px', // Space between arrow and text
-          color: '#2ea67a', // Brand green color
-          textDecoration: 'none', // Remove underline
-          marginBottom: '16px',
-          fontSize: '14px'
-        }}>
+        <Link to={`/courses/${courseId}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#2ea67a', textDecoration: 'none', marginBottom: '16px', fontSize: '14px' }}>
           ← Back to Course
         </Link>
-
         {/* Course Header Section - displays course title and rating summary */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px', // Rounded corners
-          padding: '24px', // Internal spacing
-          marginBottom: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)' // Subtle shadow
-        }}>
+        <div style={{ background: 'white', borderRadius: '12px', padding: '24px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           {/* Main course title display */}
           <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', color: '#222' }}>
             {course.title}
           </h1>
           {/* Rating summary section with star icon and review count */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px', // Space between rating elements
-            fontSize: '16px',
-            color: '#666' // Medium gray text
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '16px', color: '#666' }}>
             {/* Rating display with star icon */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               {/* Star icon with yellow color */}
@@ -106,14 +71,8 @@ export default function CourseReviews() {
             </div>
           </div>
         </div>
-
         {/* Reviews List Container - main content area */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          padding: '24px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-        }}>
+        <div style={{ background: 'white', borderRadius: '12px', padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
           {/* Section heading for reviews */}
           <h2 style={{ margin: '0 0 24px 0', fontSize: '20px', color: '#222' }}>
             Course Reviews
@@ -121,12 +80,7 @@ export default function CourseReviews() {
 
           {/* Conditional rendering based on reviews availability */}
           {reviews.length === 0 ? (
-            // Empty state when no reviews exist
-            <div style={{
-              textAlign: 'center',
-              padding: '40px 20px', // Generous padding for empty state
-              color: '#999' // Light gray text
-            }}>
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#999' }}>
               {/* Large emoji icon for visual appeal */}
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📝</div>
               {/* Primary empty state message */}
@@ -135,8 +89,8 @@ export default function CourseReviews() {
               <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>Be the first to review this course!</p>
             </div>
           ) : (
-            // Reviews list container with vertical stacking
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}> 
               {/* Map through all reviews to create individual cards */}
               {reviews.map((review, index) => (
                 // Individual review card with border and background
@@ -181,18 +135,11 @@ export default function CourseReviews() {
                           User {review.userId}
                         </div>
                         {/* Star rating display container */}
-                        <div style={{
-                          display: 'flex',
-                          gap: '2px', // Small gap between stars
-                          marginTop: '4px'
-                        }}>
+                        <div style={{ display: 'flex', gap: '2px', marginTop: '4px' }}>
                           {/* Generate 5 star rating display using array mapping */}
                           {[1, 2, 3, 4, 5].map(star => (
                             // Individual star with conditional coloring
-                            <span key={star} style={{
-                              color: star <= review.stars ? '#ffc107' : '#ddd', // Yellow if filled, gray if empty
-                              fontSize: '16px'
-                            }}>
+                            <span key={star} style={{ color: star <= review.stars ? '#ffc107' : '#ddd', fontSize: '16px' }}>
                               ★
                             </span>
                           ))}
@@ -203,12 +150,7 @@ export default function CourseReviews() {
 
                   {/* Review Comment Section - only show if comment exists */}
                   {review.comment && (
-                    <div style={{
-                      fontSize: '14px',
-                      color: '#555', // Darker gray for readability
-                      lineHeight: '1.5', // Better text spacing
-                      paddingLeft: '52px' // Align with user info text
-                    }}>
+                    <div style={{ fontSize: '14px', color: '#555', lineHeight: '1.5', paddingLeft: '52px' }}>
                       {review.comment}
                     </div>
                   )}

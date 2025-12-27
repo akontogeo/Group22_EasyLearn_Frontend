@@ -7,8 +7,7 @@ import RatingDialog from '../components/RatingDialog';
 import LessonsList from '../components/LessonsList';
 import CourseActions from '../components/CourseActions';
 // Custom hooks for data and state management
-import { useCourseProgress } from '../hooks/useCourseProgress';
-import { useCourseRating } from '../hooks/useCourseRating';
+import { useCourseProgress, useCourseRating } from '../hooks';
 // Component-specific styling
 import './CourseProgress.css';
 

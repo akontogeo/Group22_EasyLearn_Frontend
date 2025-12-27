@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getCourse, submitCourseReview } from '../api/courses';
+import { getCourse} from '../api/courses';
 import { getProgress, getUserEnrolledCourses, enrollInCourse, withdrawFromCourse } from '../api/users';
 import { useAuth } from '../context/AuthContext';
 
